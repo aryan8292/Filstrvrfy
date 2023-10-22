@@ -63,7 +63,9 @@ async def start_command(client: Client, message: Message):
         await asyncio.sleep(120)  # Adjust the waiting time if needed
         await ex.delete()
         return
-
+if __name__ == "__main__":
+    app.run()
+    
     if len(text) > 7:
         try:
             base64_string = text.split(" ", 1)[1]
