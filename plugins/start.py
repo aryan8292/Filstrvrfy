@@ -15,8 +15,28 @@ from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL
 from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
 from datetime import datetime, timedelta
+import pymongo
 
 SECONDS = int(os.getenv("SECONDS", "10"))
+
+# Initialize your MongoDB client and connect to the database
+client = pymongo.MongoClient("mongodb+srv://tk22kalal:x29uNTtjSHt6JG8n@cluster0.wt3scsz.mongodb.net/?retryWrites=true&w=majority")  # Replace with your MongoDB connection URI
+db = client["Cluster0"]  # Replace with your database name
+
+# Define the function to get the verification timestamp
+async def get_verification_timestamp(user_id):
+    # Assuming you have a collection named "verifications" where you store user verification data
+    verifications_collection = db["verifications"]
+
+    # Find the verification document for the given user_id
+    verification_doc = verifications_collection.find_one({"user_id": user_id})
+
+    if verification_doc and "timestamp" in verification_doc:
+        # Extract the timestamp from the document
+        timestamp = verification_doc["timestamp"]
+        return timestamp  # Return the retrieved timestamp
+    else:
+        return None  # If no timestamp is found, return None or a default value
 
 async def get_verification_token(user_id):
     # Implement your verification token generation logic
