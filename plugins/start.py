@@ -66,9 +66,6 @@ async def has_seen_ads(user_id):
     # Implement the code to check if a user has seen ads
     # This could involve checking the flag in your database
 
-from datetime import datetime, timedelta
-
-# ...
 
 # Modify your 'start_command' function
 @Bot.on_message(filters.command('start') & filters.private)
