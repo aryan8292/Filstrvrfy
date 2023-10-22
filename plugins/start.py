@@ -21,7 +21,7 @@ SECONDS = int(os.getenv("SECONDS", "10"))
 
 
 # Define your verification channel ID
-VERIFICATION_CHANNEL_ID = "your_verification_channel_id_here"
+VERIFICATION_CHANNEL_ID = "-1002037012620"
 
 # Function to check if a user is verified
 async def is_verified_user(user_id):
