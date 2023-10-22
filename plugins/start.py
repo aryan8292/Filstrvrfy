@@ -290,8 +290,8 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
         msg = await message.reply(REPLY_ERROR)
         await asyncio.sleep(8)
         await msg.delete()
-return
-
+        return
+        
 async def check_verification(client, user_id):
     # Retrieve the user's verification status and expiration date from the database
     verified = True  # Replace with your database query to get the verification status
