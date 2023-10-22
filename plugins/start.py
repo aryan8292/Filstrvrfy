@@ -62,7 +62,7 @@ async def start_command(client: Client, message: Message):
         await msg.delete()
         await asyncio.sleep(120)  # Adjust the waiting time if needed
         await ex.delete()
-        return
+        
 if __name__ == "__main__":
     app.run()
     
