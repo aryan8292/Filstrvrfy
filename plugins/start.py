@@ -76,6 +76,11 @@ async def start_command(client: Client, message: Message):
             ]])
         )
 
+    # Here, you can add code to check if the user has seen the ads and then send a success message.
+    # If the user has seen ads and the verification was successful, you can do something like this:
+    if await is_verified_user(user_id):
+        await message.reply_text("You are verified for 24 hours.")
+
     # You can add more logic here for handling other cases
         
     if len(text) > 7:
