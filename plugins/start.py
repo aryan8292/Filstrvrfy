@@ -31,27 +31,21 @@ async def verify_user(client, user_id, token):
     pass
 
 
-VERIFY = True  # Use True to enable verification
-
-# Define the 24-hour expiration period
-VERIFICATION_PERIOD_HOURS = 24
-
 @Bot.on_message(filters.command('start') & filters.private & subscribed)
 async def start_command(client: Client, message: Message):
-    user_id = message.from_user.id
+    id = message.from_user.id
+    if not await present_user(id):
+        try:
+            await add_user(id)
+        except:
+            pass
+    text = message.text
 
-    # Check if user is already in the database; if not, add them
-    if not await add_user(user_id):
-        # Handle database errors if necessary
-        return
-
-    # Check if verification is enabled and user is not verified
-    if VERIFY and not await check_verification(user_id):
-        # Show a message indicating that verification is required
+    if VERIFY and not await check_verification(client, message.from_user.id):
         msg = await message.reply("Please Wait...")
-        ex_text = "**Verification Required!**\n\nYou must verify to access this content."
+        ex_text = "**Verification Expired!**\n\nYou have to verify again."
         btn = [[
-            InlineKeyboardButton("Verify", url=await get_verification_url(client, user_id))
+            InlineKeyboardButton("Verify", url=await get_token(client, message.from_user.id, f"https://telegram.me/{client.username}?start=verify-{message.from_user.id}-{await get_verification_token(message.from_user.id)}"))
         ]]
         reply_markup = InlineKeyboardMarkup(btn)
         ex = await message.reply_text(
@@ -62,20 +56,6 @@ async def start_command(client: Client, message: Message):
         await asyncio.sleep(120)  # Adjust the waiting time if needed
         await ex.delete()
         return
-
-    # If the user is verified, check if the verification is within the 24-hour period
-    verification_timestamp = await get_verification_timestamp(user_id)
-    current_time = datetime.now()
-    if verification_timestamp and current_time < (verification_timestamp + timedelta(hours=VERIFICATION_PERIOD_HOURS)):
-        # Provide access to the file here
-        file_path = "path_to_your_file.pdf"  # Replace with the actual path to your file
-        caption = "Here is the file you requested:"
-        await message.reply_document(document=file_path, caption=caption)
-    else:
-        # Handle the case where the verification has expired
-        msg = await message.reply("Verification has expired. Please verify again.")
-        await asyncio.sleep(120)  # Adjust the waiting time if needed
-        await msg.delete()
 
     if len(text) > 7:
         try:
