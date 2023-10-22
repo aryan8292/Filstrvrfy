@@ -23,6 +23,25 @@ SECONDS = int(os.getenv("SECONDS", "10"))
 # Define your verification channel ID
 VERIFICATION_CHANNEL_ID = "-1002037012620"
 
+# Function to get the verification timestamp for a user
+async def get_verification_timestamp(user_id):
+    # Replace with your logic to retrieve the verification data from the verification channel
+    verification_messages = await client.get_history(VERIFICATION_CHANNEL_ID, limit=50)  # Adjust the limit as needed
+
+    for message in verification_messages:
+        message_text = message.text
+        if f"User {user_id}" in message_text:
+            # Extract the expiration time from the message
+            expiration_time_str = message_text.split("Expiration time: ")[-1]
+
+            # Parse the expiration time string into a datetime object
+            expiration_time = datetime.strptime(expiration_time_str, "%Y-%m-%d %H:%M:%S")
+
+            return expiration_time
+
+    # Return None if the user's verification data is not found
+    return None
+
 # Function to check if a user is verified
 async def is_verified_user(user_id):
     # Implement the logic to check if the user is verified in your storage system
