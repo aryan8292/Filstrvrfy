@@ -105,47 +105,6 @@ async def start_command(client: Client, message: Message):
             text,
             reply_markup=reply_markup
         )
-
-
-
-# Your existing code for 'start_command' function
-@Bot.on_message(filters.command('start') & filters.private)
-async def start_command(client: Client, message: Message):
-    user_id = message.from_user.id if message.from_user else None
-
-    # Check if the user is already verified
-    if VERIFY and not await is_verified_user(user_id):
-        # Generate a verification token
-        token = await get_verification_token(user_id)
-
-        # Calculate the expiration time
-        expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
-
-        # Store the verification data (You can use your own storage method)
-        store_verification_data(user_id, token, expiration_time)
-
-        # Generate a message with the verification token
-        text = (
-            f"Welcome, {message.from_user.mention}!\n\n"
-            "To access our services, please verify your identity.\n\n"
-            f"Your verification token: {token}\n\n"
-            f"Your verification is valid for {VERIFY_EXPIRATION_HOURS} hours."
-        )
-
-        # Create a button for verification
-        button = InlineKeyboardButton(
-            "Verify",
-            url=await get_token(client, user_id, f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}")
-        )
-
-        # Create a reply markup with the verification button
-        reply_markup = InlineKeyboardMarkup([[button]])
-
-        # Send the verification message
-        await message.reply_text(
-            text,
-            reply_markup=reply_markup
-        )
     else:
         # User is already verified or verification is disabled
         await message.reply_text(
@@ -159,9 +118,6 @@ async def start_command(client: Client, message: Message):
     # Check if the user has seen ads
     if await has_seen_ads(user_id):
         await message.reply_text("You are verified for 24 hours.")
-
-
-    # You can add more logic here for handling other cases
         
     if len(text) > 7:
         try:
