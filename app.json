@@ -37,8 +37,8 @@
       "description": "make a channel (database channel), then make the bot as admin in channel, and it's id",
       "value": "-100"
     },
-    "":{
-      "description": "make a channel (database channel), then make the bot as admin in channel, and it's id",
+    "VERIFICATION_CHANNEL_ID":{
+      "description": "make a channel (log channel), then make the bot as admin in channel, and it's id",
       "value": "-100"
     },
     "FORCE_SUB_CHANNEL":{
