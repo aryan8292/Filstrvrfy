@@ -28,13 +28,12 @@ async def check_token(bot, userid, token):
         TKN = TOKENS[user.id]
         if token in TKN.keys():
             is_used = TKN[token]
-            if is_used == True:
+            if is_used:
                 return False
             else:
                 return True
     else:
         return False
-
 
 async def get_token(bot, userid, link):
     user = await bot.get_users(userid)
@@ -50,6 +49,8 @@ async def verify_user(bot, userid, token):
     tz = pytz.timezone('Asia/Kolkata')
     today = date.today()
     VERIFIED[user.id] = str(today)
+    bot_username = "YourBot"  # Replace with your bot's username
+    return await generate_telegram_bot_url(bot_username)
 
 async def check_verification(bot, userid):
     user = await bot.get_users(userid)
@@ -65,3 +66,6 @@ async def check_verification(bot, userid):
             return True
     else:
         return False
+
+async def generate_telegram_bot_url(username):
+    return f'tg://resolve?domain={username}&start=verified'
