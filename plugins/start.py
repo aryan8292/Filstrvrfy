@@ -2,6 +2,7 @@
 
 
 
+# Import necessary modules and functions
 import os
 import asyncio
 from pyrogram import Client, filters, __version__
@@ -13,54 +14,48 @@ from bot import Bot
 from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT
 from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
-from datetime import datetime, timedelta
 
 SECONDS = int(os.getenv("SECONDS", "10"))  # Add time in seconds for waiting before deleting
+VERIFY = "True"
 
-# Define the 24-hour verification window
-VERIFICATION_WINDOW_HOURS = 24
+# Define the get_verification_token function
+async def get_verification_token(user_id):
+    # Replace this with your logic to generate and retrieve the verification token
+    token = "your_verification_token_logic_here"
+    return token
+
+# Define the token verification function
+async def verify_user(client, user_id, token):
+    # Replace this with your logic for verifying the user based on the provided token
+    # If verification is successful, you can update the user's status in the database
+    pass
+
 
 @Bot.on_message(filters.command('start') & filters.private & subscribed)
-def start_command(client: Client, message: Message):
-    user_id = message.from_user.id
-    token = get_verification_token(user_id)  # Removed 'await'
-
-    if not present_user(user_id):  # Removed 'await'
+async def start_command(client: Client, message: Message):
+    id = message.from_user.id
+    if not await present_user(id):
         try:
-            add_user(user_id)  # Removed 'await'
+            await add_user(id)
         except:
             pass
+    text = message.text
 
-    if VERIFY and not check_verification(client, user_id):  # Removed 'await'
-        msg = message.reply("Please Wait...")  # Removed 'await'
-        expiration_time = datetime.now() + timedelta(hours=VERIFICATION_WINDOW_HOURS)
-
-        # Store the token and its expiration time
-        store_verification_data(user_id, token, expiration_time)
-
-        ex_text = f"**Verification Token**: {token}\n\n"
-        ex_text += f"Your verification is valid for {VERIFICATION_WINDOW_HOURS} hours.\n\n"
-        ex_text += "After that, you'll need to verify again."
-
-        btn = [
-            [InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}")]
-        ]
+    if VERIFY and not await check_verification(client, message.from_user.id):
+        msg = await message.reply("Please Wait...")
+        ex_text = "**Verification Expired!**\n\nYou have to verify again."
+        btn = [[
+            InlineKeyboardButton("Verify", url=await get_token(client, message.from_user.id, f"https://telegram.me/{client.username}?start=verify-{message.from_user.id}-{await get_verification_token(message.from_user.id)}"))
+        ]]
         reply_markup = InlineKeyboardMarkup(btn)
-
-        ex = message.reply_text(
+        ex = await message.reply_text(
             text=ex_text,
             reply_markup=reply_markup
         )
-
-        msg.delete()  # Removed 'await'
-        asyncio.sleep(120)  # Adjust the waiting time if needed
-        ex.delete()  # Removed 'await'
-
-
-# Implement the store_verification_data function to store token and expiration time
-def store_verification_data(user_id, token, expiration_time):
-    # Store user verification data in a dictionary or database
-    pass
+        await msg.delete()
+        await asyncio.sleep(120)  # Adjust the waiting time if needed
+        await ex.delete()
+        return
 
     if len(text) > 7:
         try:
