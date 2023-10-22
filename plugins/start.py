@@ -66,38 +66,41 @@ async def is_verified_user(user_id):
     # Grant access if the time difference is within 24 hours
     return time_difference < timedelta(hours=24)
 
-# Function to mark a user as having seen ads
+
+# Define a collection for ads seen by users
+ads_seen_collection = db["ads_seen"]
+
 # Function to mark a user as having seen ads
 async def mark_user_as_ad_seen(user_id):
-    # Implement the code to mark the user as having seen ads
-    # For example, you can store a flag in your database
-    # Here's a hypothetical implementation using a dictionary as a database
+    # Check if the user already exists in the collection
+    existing_record = ads_seen_collection.find_one({"user_id": user_id})
 
-    # Check if the user already exists in your database
-    if user_id in ads_seen_users:
-        ads_seen_users[user_id] = True
-        # You can update a timestamp here to track when ads were last seen, if needed
+    if existing_record:
+        # Update the existing record with the current timestamp
+        ads_seen_collection.update_one(
+            {"user_id": user_id},
+            {"$set": {"timestamp": datetime.now()}}
+        )
     else:
-        # If the user is not in the database, add them and mark as seen
-        ads_seen_users[user_id] = True
+        # If the user is not in the collection, add a new record
+        ads_seen_collection.insert_one({"user_id": user_id, "timestamp": datetime.now()})
 
 # Function to check if a user has seen ads
 async def has_seen_ads(user_id):
-    # Implement the code to check if the user has seen ads
-    # This function should return True if the user has seen ads, and False otherwise
-    # Here's a hypothetical implementation using a dictionary as a database
+    # Check if the user exists in the collection and if they have seen ads
+    existing_record = ads_seen_collection.find_one({"user_id": user_id})
 
-    # Check if the user exists in the database and if they have seen ads
-    return user_id in ads_seen_users and ads_seen_users[user_id]
+    if existing_record:
+        # Check if the timestamp is within a specific time window (e.g., 12 hours)
+        timestamp = existing_record["timestamp"]
+        current_time = datetime.now()
+        time_difference = current_time - timestamp
+        ad_verification_time = timedelta(hours=12)
 
+        return time_difference < ad_verification_time
 
-    # Define the ad verification time window (replace with your specific time)
-    ad_verification_time = timedelta(hours=12)  # 12 hours
+    return False
 
-    current_time = datetime.now()
-    time_difference = current_time - ad_view_timestamp
-
-    return time_difference < ad_verification_time
 
 # Your existing code for 'start_command' function
 @Bot.on_message(filters.command('start') & filters.private)
