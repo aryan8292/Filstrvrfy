@@ -65,7 +65,7 @@ async def start_command(client: Client, message: Message):
         await message.reply_text(
             text,
             reply_markup=reply_markup,
-            parse_mode="markdown"
+            parse_mode="MarkdownV2"
         )
     else:
         # User is already verified or verification is disabled
