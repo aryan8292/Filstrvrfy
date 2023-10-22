@@ -56,6 +56,7 @@ async def start_command(client: Client, message: Message):
         await asyncio.sleep(120)  # Adjust the waiting time if needed
         await ex.delete()
 
+
 # Implement the store_verification_data function to store token and expiration time
 def store_verification_data(user_id, token, expiration_time):
     # Store user verification data in a dictionary or database
