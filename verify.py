@@ -2,7 +2,7 @@ import os
 import string
 import random
 import pytz
-from datetime import date
+from datetime import date, datetime, timedelta
 import requests as re
 
 SHORTNER = os.environ.get("SHORTENER_SITE")
@@ -49,21 +49,22 @@ async def verify_user(bot, userid, token):
     tz = pytz.timezone('Asia/Kolkata')
     today = date.today()
     VERIFIED[user.id] = str(today)
-    bot_username = "@FileXTera_bot"  # Replace with your bot's username
+
+    # Update the verification timestamp to mark the user as verified for 24 hours
+    expiration_time = datetime.now() + timedelta(hours=24)
+    VERIFIED[user.id] = expiration_time
+
     return await generate_telegram_bot_url(bot_username)
 
 async def check_verification(bot, userid):
     user = await bot.get_users(userid)
-    tz = pytz.timezone('Asia/Kolkata')
-    today = date.today()
+    current_time = datetime.now()
     if user.id in VERIFIED.keys():
-        EXP = VERIFIED[user.id]
-        years, month, day = EXP.split('-')
-        comp = date(int(years), int(month), int(day))
-        if comp < today:
-            return False
-        else:
+        expiration_time = VERIFIED[user.id]
+        if current_time < expiration_time:
             return True
+        else:
+            return False
     else:
         return False
 
