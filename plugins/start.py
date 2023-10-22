@@ -59,8 +59,10 @@ async def has_access(user_id):
     return time_difference < timedelta(hours=24)
 
 async def mark_user_as_ad_seen(user_id):
-    # Implement the code to mark the user as having seen ads
-    # This could involve storing a flag in your database
+    # Implement the logic to mark the user as having seen ads here
+    # For example, you can store this information in your storage system
+    # You should also store a timestamp to know when the user last saw ads
+
 
 async def has_seen_ads(user_id):
     # Implement the code to check if a user has seen ads
