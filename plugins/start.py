@@ -35,7 +35,18 @@ def store_verification_data(user_id, token, expiration_time):
     
 @Bot.on_message(filters.command('start') & filters.private & subscribed)
 async def start_command(client: Client, message: Message):
-    user_id = get_user_id(message.from_user.id if message.from_user else None)
+    # Assume you have a way to obtain the user ID
+user_id = message.from_user.id if message.from_user else None
+
+# Now you can store the 'user_id' in your MongoDB document
+document = {
+    "user_id": user_id,
+    "other_data": "Some other data"
+}
+
+# Store 'document' in MongoDB
+collection.insert_one(document)
+
     token = await get_verification_token(user_id)
     if not await present_user(id):
         try:
