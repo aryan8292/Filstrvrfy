@@ -29,6 +29,19 @@ def store_verification_data(user_id, token, expiration_time):
     # In this example, we'll print the information
     print(f"Storing data for user ID {user_id}: Token - {token}, Expiration - {expiration_time}")
 
+async def is_verified_user(user_id):
+    # Implement your verification status check here
+    # Return True if the user is verified, and False otherwise
+    # You should check your storage, such as a database, to determine the verification status
+
+    # For example, if you have a database table 'verified_users' with a column 'user_id',
+    # you can check if the user_id exists in the table.
+
+    # Replace this with your own verification logic
+    verified_users = [123456, 789012, 345678]  # List of verified user IDs
+
+    return user_id in verified_users
+
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id if message.from_user else None
