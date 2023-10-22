@@ -32,8 +32,17 @@ def store_verification_data(user_id, token, expiration_time):
 
 # Function to check if a user is verified
 async def is_verified_user(user_id):
-    # Check if the user is verified in your storage system
-    # Return True if verified, False otherwise
+    # Implement your verification status check here
+    # Return True if the user is verified, and False otherwise
+    # You should check your storage, such as a database, to determine the verification status
+
+    # For example, if you have a database table 'verified_users' with a column 'user_id',
+    # you can check if the user_id exists in the table.
+
+    # Replace this with your own verification logic
+    verified_users = [123456, 789012, 345678]  # List of verified user IDs
+
+    return user_id in verified_users
     # Also, check if the verification timestamp is within the 24-hour window
 
 async def has_access(user_id):
@@ -57,7 +66,6 @@ async def has_seen_ads(user_id):
     # Implement the code to check if a user has seen ads
     # This could involve checking the flag in your database
 
-# Modify your 'start_command' function
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id if message.from_user else None
@@ -110,6 +118,7 @@ async def start_command(client: Client, message: Message):
                 InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
             ]])
         )
+
 
     
 
