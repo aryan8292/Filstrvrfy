@@ -19,9 +19,6 @@ import pymongo
 
 SECONDS = int(os.getenv("SECONDS", "10"))
 
-from datetime import datetime, timedelta
-from pyrogram import Client, Message, InlineKeyboardButton, InlineKeyboardMarkup, filters
-from config import VERIFY, VERIFY_EXPIRATION_HOURS
 
 # Define your verification channel ID
 VERIFICATION_CHANNEL_ID = "your_verification_channel_id_here"
