@@ -29,18 +29,33 @@ def store_verification_data(user_id, token, expiration_time):
     # In this example, we'll print the information
     print(f"Storing data for user ID {user_id}: Token - {token}, Expiration - {expiration_time}")
 
+
+# Function to check if a user is verified
 async def is_verified_user(user_id):
-    # Implement your verification status check here
-    # Return True if the user is verified, and False otherwise
-    # You should check your storage, such as a database, to determine the verification status
+    # Check if the user is verified in your storage system
+    # Return True if verified, False otherwise
+    # Also, check if the verification timestamp is within the 24-hour window
 
-    # For example, if you have a database table 'verified_users' with a column 'user_id',
-    # you can check if the user_id exists in the table.
+async def has_access(user_id):
+    verification_timestamp = await get_verification_timestamp(user_id)
 
-    # Replace this with your own verification logic
-    verified_users = [123456, 789012, 345678]  # List of verified user IDs
+    if not verification_timestamp:
+        return False
 
-    return user_id in verified_users
+    # Calculate the time difference between the current time and the verification timestamp
+    current_time = datetime.now()
+    time_difference = current_time - verification_timestamp
+
+    # Grant access if the time difference is within 24 hours
+    return time_difference < timedelta(hours=24)
+
+async def mark_user_as_ad_seen(user_id):
+    # Implement the code to mark the user as having seen ads
+    # This could involve storing a flag in your database
+
+async def has_seen_ads(user_id):
+    # Implement the code to check if a user has seen ads
+    # This could involve checking the flag in your database
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
@@ -48,37 +63,43 @@ async def start_command(client: Client, message: Message):
 
     # Check if the user is already verified
     if VERIFY and not await check_verification(client, user_id):
-        # Generate a verification token
-        token = await get_verification_token(user_id)
+        # Check if the user has seen ads
+        if await has_seen_ads(user_id):
+            # Grant access for 24 hours
+            await mark_user_as_ad_seen(user_id)
+            await message.reply_text("You are verified for 24 hours.")
+        else:
+            # Generate a verification token
+            token = await get_verification_token(user_id)
 
-        # Calculate the expiration time
-        expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
+            # Calculate the expiration time
+            expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
 
-        # Store the verification data (You can use your own storage method)
-        store_verification_data(user_id, token, expiration_time)
+            # Store the verification data (You can use your own storage method)
+            store_verification_data(user_id, token, expiration_time)
 
-        # Generate a message with the verification token
-        text = (
-            f"Welcome, {message.from_user.mention}!\n\n"
-            "To access our services, please verify your identity.\n\n"
-            f"Your verification token: {token}\n\n"
-            f"Your verification is valid for {VERIFY_EXPIRATION_HOURS} hours."
-        )
+            # Generate a message with the verification token
+            text = (
+                f"Welcome, {message.from_user.mention}!\n\n"
+                "To access our services, please verify your identity.\n\n"
+                f"Your verification token: {token}\n\n"
+                f"Your verification is valid for {VERIFY_EXPIRATION_HOURS} hours."
+            )
 
-        # Create a button for verification
-        button = InlineKeyboardButton(
-            "Verify",
-            url=await get_token(client, user_id, f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}")
-        )
+            # Create a button for verification
+            button = InlineKeyboardButton(
+                "Verify",
+                url=await get_token(client, user_id, f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}")
+            )
 
-        # Create a reply markup with the verification button
-        reply_markup = InlineKeyboardMarkup([[button]])
+            # Create a reply markup with the verification button
+            reply_markup = InlineKeyboardMarkup([[button]])
 
-        # Send the verification message
-        await message.reply_text(
-            text,
-            reply_markup=reply_markup
-        )
+            # Send the verification message
+            await message.reply_text(
+                text,
+                reply_markup=reply_markup
+            )
     else:
         # User is already verified or verification is disabled
         await message.reply_text(
@@ -88,11 +109,7 @@ async def start_command(client: Client, message: Message):
                 InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
             ]])
         )
-
-    # Here, you can add code to check if the user has seen the ads and then send a success message.
-    # If the user has seen ads and the verification was successful, you can do something like this:
-    if await is_verified_user(user_id):
-        await message.reply_text("You are verified for 24 hours.")
+    
 
     # You can add more logic here for handling other cases
         
