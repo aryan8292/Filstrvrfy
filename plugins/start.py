@@ -27,10 +27,11 @@ async def get_verification_token(user_id):
     # Generate and return a verification token
     return "your_verification_token_logic_here"
 
-# Replace with your actual logic for storing verification data
 def store_verification_data(user_id, token, expiration_time):
-    # Store user verification data, e.g., in a dictionary, database, or cache
-    pass
+    # Implement how you store verification data
+    # For example, you can store it in a database
+    # In this example, we'll just print the information
+    print(f"Storing data for user ID {user_id}: Token - {token}, Expiration - {expiration_time}")
     
 @Bot.on_message(filters.command('start') & filters.private & subscribed)
 async def start_command(client: Client, message: Message):
