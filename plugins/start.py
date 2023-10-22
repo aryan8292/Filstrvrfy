@@ -30,22 +30,41 @@ def store_verification_data(user_id, token, expiration_time):
     print(f"Storing data for user ID {user_id}: Token - {token}, Expiration - {expiration_time}")
 
 
+from datetime import datetime, timedelta
+
 # Function to check if a user is verified
 async def is_verified_user(user_id):
-# Function to check if a user is verified
-async def is_verified_user(user_id):
-    # Implement the logic to check if the user is verified
-    # This function should return True if the user is verified, and False otherwise
+    # Implement your logic to check if the user is verified in your storage system
+    # For example, check if the user is marked as verified in your database
+    # Return True if the user is verified, and False otherwise
+    return False  # Replace this with your logic
+
+# Function to grant access and check if user has access within 24 hours
+async def has_access(user_id):
+    verification_timestamp = await get_verification_timestamp(user_id)
+
+    if not verification_timestamp:
+        return False
+
+    # Calculate the time difference between the current time and the verification timestamp
+    current_time = datetime.now()
+    time_difference = current_time - verification_timestamp
+
+    # Grant access if the time difference is within 24 hours
+    return time_difference < timedelta(hours=24)
 
 # Function to mark a user as having seen ads
 async def mark_user_as_ad_seen(user_id):
-    # Implement the logic to mark the user as having seen ads here
-    # For example, you can store this information in your storage system
+    # Implement your logic to mark the user as having seen ads
+    # This could involve storing a flag or timestamp in your database
+    pass  # Replace this with your logic
 
 # Function to check if a user has seen ads
 async def has_seen_ads(user_id):
-    # Implement the logic to check if the user has seen ads
-    # This function should return True if the user has seen ads, and False otherwise
+    # Implement your logic to check if a user has seen ads
+    # This could involve checking the flag or timestamp in your database
+    return False  # Replace this with your logic
+
 
 # Modify your 'start_command' function
 @Bot.on_message(filters.command('start') & filters.private)
