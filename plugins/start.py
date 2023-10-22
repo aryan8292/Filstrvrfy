@@ -55,7 +55,6 @@ async def mark_user_as_ad_seen(user_id):
 async def has_seen_ads(user_id):
     # Implement the code to check if the user has seen ads
     # This function should return True if the user has seen ads, and False otherwise
-
     # Example logic for ad verification
     ad_view_timestamp = await get_ad_view_timestamp(user_id)
     if not ad_view_timestamp:
