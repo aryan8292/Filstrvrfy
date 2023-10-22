@@ -24,23 +24,27 @@ async def is_subscribed(filter, client, update):
         return True
 
 async def encode(string):
-    string_bytes = string.encode("utf-8")  # Change encoding to utf-8
+    string_bytes = string.encode("ascii")
     base64_bytes = base64.urlsafe_b64encode(string_bytes)
-    base64_string = (base64_bytes.decode("utf-8")).strip("=")  # Change encoding to utf-8
+    base64_string = (base64_bytes.decode("ascii")).strip("=")
     return base64_string
 
 async def decode(base64_string):
     base64_string = base64_string.strip("=")
-    base64_bytes = (base64_string + "=" * (-len(base64_string) % 4)).encode("utf-8")  # Change encoding to utf-8
-    string_bytes = base64.urlsafe_b64decode(base64_bytes)
-    string = string_bytes.decode("utf-8")  # Change encoding to utf-8
-    return string
+    base64_bytes = (base64_string + "=" * (-len(base64_string) % 4)).encode("utf-8")
+    try:
+        string_bytes = base64.urlsafe_b64decode(base64_bytes)
+        string = string_bytes.decode("utf-8", errors='ignore')
+        return string
+    except Exception as e:
+        print(f"Error decoding base64 string: {e}")
+        return ""
 
 async def get_messages(client, message_ids):
     messages = []
     total_messages = 0
     while total_messages != len(message_ids):
-        temb_ids = message_ids[total_messages:total_messages + 200]
+        temb_ids = message_ids[total_messages:total_messages+200]
         try:
             msgs = await client.get_messages(
                 chat_id=client.db_channel.id,
