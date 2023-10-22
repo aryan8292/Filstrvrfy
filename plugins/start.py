@@ -20,13 +20,10 @@ import pymongo
 SECONDS = int(os.getenv("SECONDS", "10"))
 
 # Function to check if a user is verified and has seen ads
-async def is_verified_user(user_id):
-    # Implement the logic to check if the user is verified in your storage system
-    # Also, check if the user has seen ads
-    is_verified = await get_verification_status(user_id)
-    has_seen_ads = await has_seen_ads(user_id)
-
-    return is_verified and has_seen_ads
+# Function to check if a user is verified
+async def is_verified_user(user_id, verification_collection):
+    # Check if the user is verified in your MongoDB
+    return await get_verification_status(user_id, verification_collection)
 
 # Function to get the verification status from your storage system
 # Function to get the verification status of a user from the database
@@ -43,7 +40,6 @@ async def has_seen_ads(client, user, verification_code, ads_collection, verifica
     # Implement the logic to check if the user has seen ads
     # This function should return True if the user has seen ads, and False otherwise
     # Additionally, record the verification details in your verification channel
-    # Replace 'ads_collection' with the actual name of your ads MongoDB collection
     if await ads_collection.count_documents({'user_id': user.id}) > 0:
         # The user has seen ads
         await mark_user_as_ad_seen(client, user, verification_code, verification_channel_id)
