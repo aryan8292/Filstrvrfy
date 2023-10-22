@@ -32,42 +32,20 @@ def store_verification_data(user_id, token, expiration_time):
 
 # Function to check if a user is verified
 async def is_verified_user(user_id):
-    # Implement your verification status check here
-    # Return True if the user is verified, and False otherwise
-    # You should check your storage, such as a database, to determine the verification status
+# Function to check if a user is verified
+async def is_verified_user(user_id):
+    # Implement the logic to check if the user is verified
+    # This function should return True if the user is verified, and False otherwise
 
-    # For example, if you have a database table 'verified_users' with a column 'user_id',
-    # you can check if the user_id exists in the table.
-
-    # Replace this with your own verification logic
-    verified_users = [123456, 789012, 345678]  # List of verified user IDs
-
-    return user_id in verified_users
-    # Also, check if the verification timestamp is within the 24-hour window
-
-async def has_access(user_id):
-    verification_timestamp = await get_verification_timestamp(user_id)
-
-    if not verification_timestamp:
-        return False
-
-    # Calculate the time difference between the current time and the verification timestamp
-    current_time = datetime.now()
-    time_difference = current_time - verification_timestamp
-
-    # Grant access if the time difference is within 24 hours
-    return time_difference < timedelta(hours=24)
-
+# Function to mark a user as having seen ads
 async def mark_user_as_ad_seen(user_id):
     # Implement the logic to mark the user as having seen ads here
     # For example, you can store this information in your storage system
-    # You should also store a timestamp to know when the user last saw ads
 
-
+# Function to check if a user has seen ads
 async def has_seen_ads(user_id):
-    # Implement the code to check if a user has seen ads
-    # This could involve checking the flag in your database
-
+    # Implement the logic to check if the user has seen ads
+    # This function should return True if the user has seen ads, and False otherwise
 
 # Modify your 'start_command' function
 @Bot.on_message(filters.command('start') & filters.private)
