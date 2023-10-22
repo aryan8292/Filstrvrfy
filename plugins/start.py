@@ -29,19 +29,35 @@ async def is_verified_user(user_id):
     return is_verified and has_seen_ads
 
 # Function to get the verification status from your storage system
-async def get_verification_status(user_id):
-    # Implement the logic to get the verification status of the user from your database
-    # Return True if verified, False otherwise
+# Function to get the verification status of a user from the database
+async def get_verification_status(user_id, verification_collection):
+    # Implement the logic to retrieve the verification status from your MongoDB
+    # This function should return True if the user is verified, and False otherwise
+    # Query your MongoDB to check if the user is verified
+    # Replace 'verification_collection' with the actual name of your MongoDB collection
+    user = await verification_collection.find_one({'user_id': user_id})
+    return user is not None
 
-# Function to check if a user has seen ads
-async def has_seen_ads(user_id):
+# Function to check if a user has seen ads and record the verification details
+async def has_seen_ads(client, user, verification_code, ads_collection, verification_channel_id):
     # Implement the logic to check if the user has seen ads
-    # Return True if the user has seen ads, False otherwise
+    # This function should return True if the user has seen ads, and False otherwise
+    # Additionally, record the verification details in your verification channel
+    # Replace 'ads_collection' with the actual name of your ads MongoDB collection
+    if await ads_collection.count_documents({'user_id': user.id}) > 0:
+        # The user has seen ads
+        await mark_user_as_ad_seen(client, user, verification_code, verification_channel_id)
+        return True
+    else:
+        return False
 
-# Function to mark a user as having seen ads and record their details in the verification channel
-async def mark_user_as_ad_seen(client, user, verification_code):
+# Function to mark a user as having seen ads and record the details in the verification channel
+async def mark_user_as_ad_seen(client, user, verification_code, verification_channel_id):
     # Implement the code to mark the user as having seen ads and record their details
-    # Here, we are recording the user's details in the verification channel
+    # Record user details in your verification channel
+    verification_message = f"User: {user.mention} (ID: {user.id}) clicked on verification code: {verification_code}"
+    await client.send_message(verification_channel_id, verification_message)
+
 
     # Get the timestamp for the current time
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
