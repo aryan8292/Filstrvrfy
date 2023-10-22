@@ -66,6 +66,11 @@ async def has_seen_ads(user_id):
     # Implement the code to check if a user has seen ads
     # This could involve checking the flag in your database
 
+from datetime import datetime, timedelta
+
+# ...
+
+# Modify your 'start_command' function
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id if message.from_user else None
@@ -118,9 +123,6 @@ async def start_command(client: Client, message: Message):
                 InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
             ]])
         )
-
-
-    
 
     # You can add more logic here for handling other cases
         
