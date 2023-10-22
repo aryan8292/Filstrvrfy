@@ -2,7 +2,7 @@
 
 
 
-
+import datetime
 # Import necessary modules and functions
 import os
 import asyncio
@@ -33,19 +33,30 @@ async def verify_user(client, user_id, token):
 
 @Bot.on_message(filters.command('start') & filters.private & subscribed)
 async def start_command(client: Client, message: Message):
-    id = message.from_user.id
-    if not await present_user(id):
+    user_id = message.from_user.id
+    if not await present_user(user_id):
         try:
-            await add_user(id)
+            await add_user(user_id)
         except:
             pass
+
     text = message.text
 
-    if VERIFY and not await check_verification(client, message.from_user.id):
+    if VERIFY:
+        verified, expiration_date = await check_verification(client, user_id)
+
+        if verified:
+            current_time = datetime.datetime.now()
+            if expiration_date and current_time < expiration_date:
+                # The user is verified for 24 hours
+                await message.reply("You are verified for the next 24 hours. You can use the bot.")
+                return
+
+        # User needs to verify
         msg = await message.reply("Please Wait...")
         ex_text = "**Verification Expired!**\n\nYou have to verify again."
         btn = [[
-            InlineKeyboardButton("Verify", url=await get_token(client, message.from_user.id, f"https://telegram.me/{client.username}?start=verify-{message.from_user.id}-{await get_verification_token(message.from_user.id)}"))
+            InlineKeyboardButton("Verify", url=await get_token(client, user_id, f"https://telegram.me/{client.username}?start=verify-{user_id}-{await get_verification_token(user_id)}"))
         ]]
         reply_markup = InlineKeyboardMarkup(btn)
         ex = await message.reply_text(
