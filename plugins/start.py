@@ -5,77 +5,75 @@
 # Import necessary modules and functions
 import os
 import asyncio
-from pyrogram import Client, filters, __version__
-from pyrogram.enums import ParseMode
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
+from pyrogram import Client, filters
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from datetime import datetime, timedelta
 from verify import *  # Import your verification-related functions here
 from bot import Bot
-from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT
-from helper_func import subscribed, encode, decode, get_messages
-from database.database import add_user, del_user, full_userbase, present_user
-from datetime import datetime, timedelta
+from config import ADMINS, START_MSG, VERIFY, VERIFY_EXPIRATION_HOURS
 
-SECONDS = int(os.getenv("SECONDS", "10"))  # Add time in seconds for waiting before deleting
-VERIFY = "True"
+SECONDS = int(os.getenv("SECONDS", "10"))
 
-# Define the 24-hour verification window
-VERIFICATION_WINDOW_HOURS = 24
-
-# Replace with your actual verification token logic
 async def get_verification_token(user_id):
-    # Generate and return a verification token
-    return "your_verification_token_logic_here"
+    # Implement your verification token generation logic
+    # For example, generate a random token here
+    token = "your_verification_token_logic_here"
+    return token
 
 def store_verification_data(user_id, token, expiration_time):
-    # Implement how you store verification data
-    # For example, you can store it in a database
-    # In this example, we'll just print the information
+    # Implement how you store verification data, e.g., in a database
+    # In this example, we'll print the information
     print(f"Storing data for user ID {user_id}: Token - {token}, Expiration - {expiration_time}")
-    
-@Bot.on_message(filters.command('start') & filters.private & subscribed)
+
+@Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
-    # Assume you have a way to obtain the user ID
-user_id = message.from_user.id if message.from_user else None
+    user_id = message.from_user.id if message.from_user else None
 
-# Now you can store the 'user_id' in your MongoDB document
-document = {
-    "user_id": user_id,
-    "other_data": "Some other data"
-}
+    # Check if the user is already verified
+    if VERIFY and not await check_verification(client, user_id):
+        # Generate a verification token
+        token = await get_verification_token(user_id)
 
-# Store 'document' in MongoDB
-collection.insert_one(document)
+        # Calculate the expiration time
+        expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
 
-    token = await get_verification_token(user_id)
-    if not await present_user(id):
-        try:
-            await add_user(id)
-        except:
-            pass
-    text = message.text
-
-    if VERIFY and not await check_verification(client, message.from_user.id):
-        msg = await message.reply("Please Wait...")
-        ex_text = datetime.now() + timedelta(hours=VERIFICATION_WINDOW_HOURS)
-        # Store the token and its expiration time
+        # Store the verification data (You can use your own storage method)
         store_verification_data(user_id, token, expiration_time)
 
-        ex_text = f"**Verification Token**: {token}\n\n"
-        ex_text += f"Your verification is valid for {VERIFICATION_WINDOW_HOURS} hours.\n\n"
-        ex_text += "After that, you'll need to verify again."
-        btn = [[
-            InlineKeyboardButton("Verify", url=await get_token(client, message.from_user.id, f"https://telegram.me/{client.username}?start=verify-{message.from_user.id}-{await get_verification_token(message.from_user.id)}"))
-        ]]
-        reply_markup = InlineKeyboardMarkup(btn)
-        ex = await message.reply_text(
-            text=ex_text,
-            reply_markup=reply_markup
+        # Generate a message with the verification token
+        text = (
+            f"Welcome, {message.from_user.mention}!\n\n"
+            "To access our services, please verify your identity.\n\n"
+            f"Your verification token: {token}\n\n"
+            f"Your verification is valid for {VERIFY_EXPIRATION_HOURS} hours."
         )
-        await msg.delete()
-        await asyncio.sleep(120)  # Adjust the waiting time if needed
-        await ex.delete()
-        return
+
+        # Create a button for verification
+        button = InlineKeyboardButton(
+            "Verify",
+            url=await get_token(client, user_id, f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}")
+        )
+
+        # Create a reply markup with the verification button
+        reply_markup = InlineKeyboardMarkup([[button]])
+
+        # Send the verification message
+        await message.reply_text(
+            text,
+            reply_markup=reply_markup,
+            parse_mode="markdown"
+        )
+    else:
+        # User is already verified or verification is disabled
+        await message.reply_text(
+            START_MSG,
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
+            ]])
+        )
+
+    # You can add more logic here for handling other cases
         
     if len(text) > 7:
         try:
