@@ -48,7 +48,7 @@ async def is_verified_user(user_id):
     # This function should return True if the user is verified, and False otherwise
     # Also, check if the verification timestamp is within the 24-hour window
     current_time = datetime.now()
-    verification_timestamp = await get_verification_timestamp(user_id)
+    verification_timestamp = await get_verification_timestamp(client, user_id)
 
     if not verification_timestamp:
         return False
