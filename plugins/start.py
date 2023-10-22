@@ -33,30 +33,29 @@ async def verify_user(client, user_id, token):
 
 @Bot.on_message(filters.command('start') & filters.private & subscribed)
 async def start_command(client: Client, message: Message):
-    user_id = message.from_user.id
-    if not await present_user(user_id):
+    id = message.from_user.id
+    if not await present_user(id):
         try:
-            await add_user(user_id)
+            await add_user(id)
         except:
             pass
-
     text = message.text
 
-    if VERIFY:
-        verified, expiration_date = await check_verification(client, user_id)
+    # Check user verification status and expiration date
+    is_verified, expiration_date = await check_verification(client, message.from_user.id)
 
-        if verified:
-            current_time = datetime.datetime.now()
-            if expiration_date and current_time < expiration_date:
-                # The user is verified for 24 hours
-                await message.reply("You are verified for the next 24 hours. You can use the bot.")
-                return
+    if is_verified:
+        print("User is verified until:", expiration_date)
+        # You can add logic here for users who are verified
+    else:
+        print("User is not verified or verification has expired")
+        # You can add logic here for users who are not verified or whose verification has expired
 
-        # User needs to verify
+    if VERIFY and not is_verified:
         msg = await message.reply("Please Wait...")
         ex_text = "**Verification Expired!**\n\nYou have to verify again."
         btn = [[
-            InlineKeyboardButton("Verify", url=await get_token(client, user_id, f"https://telegram.me/{client.username}?start=verify-{user_id}-{await get_verification_token(user_id)}"))
+            InlineKeyboardButton("Verify", url=await get_token(client, message.from_user.id, f"https://telegram.me/{client.username}?start=verify-{message.from_user.id}-{await get_verification_token(message.from_user.id)}"))
         ]]
         reply_markup = InlineKeyboardMarkup(btn)
         ex = await message.reply_text(
@@ -67,31 +66,7 @@ async def start_command(client: Client, message: Message):
         await asyncio.sleep(120)  # Adjust the waiting time if needed
         await ex.delete()
         return
-       async def check_verification(client, user_id):
-    # Retrieve the user's verification status and expiration date from the database
-    verified = True  # Replace with your database query to get the verification status
-    expiration_date = datetime.datetime(2023, 10, 20, 12, 0)  # Replace with your database query
 
-    if verified and expiration_date:
-        current_time = datetime.datetime.now()
-        if current_time < expiration_date:
-            return True, expiration_date
-        else:
-            # The verification has expired
-            return False, None
-
-    # If verification status and expiration date are not available, return (False, None)
-    return False, None
-
-# ...
-
-# Check user verification status and expiration date
-is_verified, expiration_date = await check_verification(client, user_id)
-
-if is_verified:
-    print("User is verified until:", expiration_date)
-else:
-    print("User is not verified or verification has expired")
 
     if len(text) > 7:
         try:
