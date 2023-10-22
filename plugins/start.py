@@ -9,7 +9,7 @@ from pyrogram import Client, filters, __version__
 from pyrogram.enums import ParseMode
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
-from verify import *  # Import your verification-related functions here
+from verify import check_verification, get_token, get_verification_token, verify_user
 from bot import Bot
 from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT
 from helper_func import subscribed, encode, decode, get_messages
@@ -30,31 +30,49 @@ async def verify_user(client, user_id, token):
     # If verification is successful, you can update the user's status in the database
     pass
 
+
+# Your start_command function
 @Bot.on_message(filters.command('start') & filters.private & subscribed)
 async def start_command(client: Client, message: Message):
     id = message.from_user.id
-    if not await present_user(id):
-        try:
-            await add_user(id)
-        except:
-            pass
-    text = message.text
 
-    if VERIFY and not await check_verification(client, message.from_user.id):
+    # Check if the user is already verified for 24 hours
+    is_verified = await check_verification(client, id)
+
+    if not is_verified:
+        # If not verified for 24 hours, initiate the verification process
         msg = await message.reply("Please Wait...")
-        ex_text = "**Verification Expired!**\n\nYou have to verify again."
-        btn = [[
-            InlineKeyboardButton("Verify", url=await get_token(client, message.from_user.id, f"https://telegram.me/{client.username}?start=verify-{message.from_user.id}-{await get_verification_token(message.from_user.id)}"))
-        ]]
-        reply_markup = InlineKeyboardMarkup(btn)
-        ex = await message.reply_text(
-            text=ex_text,
+        verification_token = await get_verification_token(id)
+        verification_url = f"https://telegram.me/{client.username}?start=verify-{id}-{verification_token}"
+
+        # Send the verification link to the user
+        verify_button = InlineKeyboardButton("Verify", url=verification_url)
+        reply_markup = InlineKeyboardMarkup([[verify_button]])
+        verification_msg = await message.reply_text(
+            text="Please verify to access the content.",
             reply_markup=reply_markup
         )
+
         await msg.delete()
-        await asyncio.sleep(120)  # Adjust the waiting time if needed
-        await ex.delete()
-        return
+
+        # Check if the user has completed the verification (e.g., viewed the ad)
+        for _ in range(3):  # Allow up to 3 attempts with a 120-second wait each
+            if await check_verification(client, id):
+                # User has completed verification, mark as verified for 24 hours
+                await verify_user(client, id)
+                await verification_msg.edit_text("You are verified for 24 hours! You can now access the content.")
+                await asyncio.sleep(120)  # Adjust the waiting time as needed
+                return
+
+            await asyncio.sleep(120)  # Wait for 120 seconds before checking again
+
+        # If the user didn't complete verification within the allowed attempts, provide appropriate feedback
+        await verification_msg.edit_text("Verification expired. Please try again.")
+
+    # Handle logic for verified users (access to content, etc.)
+    # ...
+
+
 
 
     if len(text) > 7:
