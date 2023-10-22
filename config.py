@@ -35,6 +35,13 @@ DB_NAME = os.environ.get("DATABASE_NAME", "filesharexbot")
 FORCE_SUB_CHANNEL = int(os.environ.get("FORCE_SUB_CHANNEL", "0"))
 
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "4"))
+IS_VERIFY = is_enabled((environ.get('IS_VERIFY', 'False')), False)
+HOW_TO_VERIFY = environ.get('HOW_TO_VERIFY', "https://t.me/c/1845700490/3")
+VERIFY2_URL = environ.get('VERIFY2_URL', "mdisklink.link")
+VERIFY2_API = environ.get('VERIFY2_API', "4fa150d44b4bf6579c24b33bbbb786dbfb4fc673")
+SHORTLINK_URL = environ.get('SHORTLINK_URL', 'clicksfly.com')
+SHORTLINK_API = environ.get('SHORTLINK_API', 'c2150e28189cefefd05f8a9c5c5770cc462033e3')
+IS_SHORTLINK = is_enabled((environ.get('IS_SHORTLINK', 'False')), False)
 
 #start message
 START_MSG = os.environ.get("START_MESSAGE", "Hello {first}\n\nIT IS OFFICIAL BOT OF PAVOLADDER AND TERALADDER LINK GENERATOR OWNER.")
