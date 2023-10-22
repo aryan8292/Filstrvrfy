@@ -67,7 +67,32 @@ async def start_command(client: Client, message: Message):
         await asyncio.sleep(120)  # Adjust the waiting time if needed
         await ex.delete()
         return
-        
+       async def check_verification(client, user_id):
+    # Retrieve the user's verification status and expiration date from the database
+    verified = True  # Replace with your database query to get the verification status
+    expiration_date = datetime.datetime(2023, 10, 20, 12, 0)  # Replace with your database query
+
+    if verified and expiration_date:
+        current_time = datetime.datetime.now()
+        if current_time < expiration_date:
+            return True, expiration_date
+        else:
+            # The verification has expired
+            return False, None
+
+    # If verification status and expiration date are not available, return (False, None)
+    return False, None
+
+# ...
+
+# Check user verification status and expiration date
+is_verified, expiration_date = await check_verification(client, user_id)
+
+if is_verified:
+    print("User is verified until:", expiration_date)
+else:
+    print("User is not verified or verification has expired")
+
     if len(text) > 7:
         try:
             base64_string = text.split(" ", 1)[1]
@@ -290,30 +315,3 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
         msg = await message.reply(REPLY_ERROR)
         await asyncio.sleep(8)
         await msg.delete()
-        return
-        
-async def check_verification(client, user_id):
-    # Retrieve the user's verification status and expiration date from the database
-    verified = True  # Replace with your database query to get the verification status
-    expiration_date = datetime.datetime(2023, 10, 20, 12, 0)  # Replace with your database query
-
-    if verified and expiration_date:
-        current_time = datetime.datetime.now()
-        if current_time < expiration_date:
-            return True, expiration_date
-        else:
-            # The verification has expired
-            return False, None
-
-    # If verification status and expiration date are not available, return (False, None)
-    return False, None
-
-# ...
-
-# Check user verification status and expiration date
-is_verified, expiration_date = await check_verification(client, user_id)
-
-if is_verified:
-    print("User is verified until:", expiration_date)
-else:
-    print("User is not verified or verification has expired")
