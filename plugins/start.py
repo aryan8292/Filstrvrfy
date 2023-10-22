@@ -24,7 +24,7 @@ SECONDS = int(os.getenv("SECONDS", "10"))
 VERIFICATION_CHANNEL_ID = "-1002037012620"
 
 # Function to get the verification timestamp for a user
-async def get_verification_timestamp(user_id):
+async def get_verification_timestamp(client, user_id):
     # Replace with your logic to retrieve the verification data from the verification channel
     verification_messages = await client.get_history(VERIFICATION_CHANNEL_ID, limit=50)  # Adjust the limit as needed
 
