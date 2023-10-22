@@ -21,18 +21,18 @@ SECONDS = int(os.getenv("SECONDS", "10"))  # Add time in seconds for waiting bef
 VERIFICATION_WINDOW_HOURS = 24
 
 @Bot.on_message(filters.command('start') & filters.private & subscribed)
-async def start_command(client: Client, message: Message):
+def start_command(client: Client, message: Message):
     user_id = message.from_user.id
-    token = await get_verification_token(user_id)
+    token = get_verification_token(user_id)  # Removed 'await'
 
-    if not await present_user(user_id):
+    if not present_user(user_id):  # Removed 'await'
         try:
-            await add_user(user_id)
+            add_user(user_id)  # Removed 'await'
         except:
             pass
 
-    if VERIFY and not await check_verification(client, user_id):
-        msg = await message.reply("Please Wait...")
+    if VERIFY and not check_verification(client, user_id):  # Removed 'await'
+        msg = message.reply("Please Wait...")  # Removed 'await'
         expiration_time = datetime.now() + timedelta(hours=VERIFICATION_WINDOW_HOURS)
 
         # Store the token and its expiration time
@@ -47,14 +47,14 @@ async def start_command(client: Client, message: Message):
         ]
         reply_markup = InlineKeyboardMarkup(btn)
 
-        ex = await message.reply_text(
+        ex = message.reply_text(
             text=ex_text,
             reply_markup=reply_markup
         )
 
-        await msg.delete()
-        await asyncio.sleep(120)  # Adjust the waiting time if needed
-        await ex.delete()
+        msg.delete()  # Removed 'await'
+        asyncio.sleep(120)  # Adjust the waiting time if needed
+        ex.delete()  # Removed 'await'
 
 
 # Implement the store_verification_data function to store token and expiration time
