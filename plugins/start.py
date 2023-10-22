@@ -64,24 +64,22 @@ async def mark_user_as_ad_seen(client, user, verification_code, verification_cha
     # Send this message to your verification channel
     await client.send_message(VERIFICATION_CHANNEL_ID, message)
 
-# Your existing code for 'start_command' function
+
+# Your 'start_command' function
 @Bot.on_message(filters.command('start') & filters.private)
-async def start_command(client: Client, message: Message):
+async def start_command(client, message):
     user_id = message.from_user.id if message.from_user else None
 
-    # Check if the user is already verified and has seen ads
-    if VERIFY and await is_verified_user(user_id):
-        # User is already verified and has seen ads
-        await message.reply_text("You are verified for 24 hours.")
-    else:
+    # Check if the user is already verified
+    if VERIFY and not await is_verified_user(user_id, verification_collection):
         # Generate a verification token
         token = await get_verification_token(user_id)
 
         # Calculate the expiration time
         expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
 
-        # Store the verification data (You can use your own storage method)
-        store_verification_data(user_id, token, expiration_time)
+        # Store the verification data in your MongoDB collection
+        await store_verification_data(verification_collection, user_id, token, expiration_time)
 
         # Generate a message with the verification token
         text = (
@@ -116,8 +114,9 @@ async def start_command(client: Client, message: Message):
         )
 
     # Check if the user has seen ads
-    if await has_seen_ads(user_id):
+    if await has_seen_ads(client, message.from_user, token, ads_collection, verification_channel_id):
         await message.reply_text("You are verified for 24 hours.")
+
         
     if len(text) > 7:
         try:
