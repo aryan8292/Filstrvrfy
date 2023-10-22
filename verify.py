@@ -49,7 +49,7 @@ async def verify_user(bot, userid, token):
     tz = pytz.timezone('Asia/Kolkata')
     today = date.today()
     VERIFIED[user.id] = str(today)
-    bot_username = "YourBot"  # Replace with your bot's username
+    bot_username = "@FileXTera_bot"  # Replace with your bot's username
     return await generate_telegram_bot_url(bot_username)
 
 async def check_verification(bot, userid):
