@@ -64,8 +64,7 @@ async def start_command(client: Client, message: Message):
         # Send the verification message
         await message.reply_text(
             text,
-            reply_markup=reply_markup,
-            parse_mode=enums.ParseMode.MARKDOWN
+            reply_markup=reply_markup
         )
     else:
         # User is already verified or verification is disabled
