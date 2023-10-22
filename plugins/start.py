@@ -19,80 +19,49 @@ import pymongo
 
 SECONDS = int(os.getenv("SECONDS", "10"))
 
-
-# Define your verification channel ID
-VERIFICATION_CHANNEL_ID = "-1002037012620"
-
-# Function to get the verification timestamp for a user
-async def get_verification_timestamp(client, user_id):
-    # Replace with your logic to retrieve the verification data from the verification channel
-    verification_messages = await client.get_history(VERIFICATION_CHANNEL_ID, limit=50)  # Adjust the limit as needed
-
-    for message in verification_messages:
-        message_text = message.text
-        if f"User {user_id}" in message_text:
-            # Extract the expiration time from the message
-            expiration_time_str = message_text.split("Expiration time: ")[-1]
-
-            # Parse the expiration time string into a datetime object
-            expiration_time = datetime.strptime(expiration_time_str, "%Y-%m-%d %H:%M:%S")
-
-            return expiration_time
-
-    # Return None if the user's verification data is not found
-    return None
-
-# Function to check if a user is verified
+# Function to check if a user is verified and has seen ads
 async def is_verified_user(user_id):
     # Implement the logic to check if the user is verified in your storage system
-    # This function should return True if the user is verified, and False otherwise
-    # Also, check if the verification timestamp is within the 24-hour window
-    current_time = datetime.now()
-    verification_timestamp = await get_verification_timestamp(client, user_id)
+    # Also, check if the user has seen ads
+    is_verified = await get_verification_status(user_id)
+    has_seen_ads = await has_seen_ads(user_id)
 
-    if not verification_timestamp:
-        return False
+    return is_verified and has_seen_ads
 
-    # Calculate the time difference between the current time and the verification timestamp
-    time_difference = current_time - verification_timestamp
-
-    # Grant access if the time difference is within 24 hours
-    return time_difference < timedelta(hours=24)
-
-# Function to mark a user as having seen ads
-async def mark_user_as_ad_seen(user_id):
-    # Implement the code to mark the user as having seen ads
-    # For example, you can store a flag in your database
-    # You can also save the expiration time
-    expiration_time = datetime.now() + timedelta(hours=24)  # User is verified for 24 hours
-
-    # Save the verification data in the channel
-    verification_data = {"user_id": user_id, "expiration_time": expiration_time}
-    await send_verification_data_to_channel(user_id, verification_data)
+# Function to get the verification status from your storage system
+async def get_verification_status(user_id):
+    # Implement the logic to get the verification status of the user from your database
+    # Return True if verified, False otherwise
 
 # Function to check if a user has seen ads
 async def has_seen_ads(user_id):
-    # Implement the code to check if the user has seen ads
-    # This function should return True if the user has seen ads, and False otherwise
-    # Here's a hypothetical implementation using a dictionary as a database
-    # Check if the user exists in your database and if they have seen ads
-    return user_id in ads_seen_users and ads_seen_users[user_id]
+    # Implement the logic to check if the user has seen ads
+    # Return True if the user has seen ads, False otherwise
 
-# Function to send verification data to the verification channel
-async def send_verification_data_to_channel(user_id, data):
-    # Prepare the data to be saved in the verification channel
-    message_text = f"User {data['user_id']} has seen ads. Expiration time: {data['expiration_time']}"
+# Function to mark a user as having seen ads and record their details in the verification channel
+async def mark_user_as_ad_seen(client, user, verification_code):
+    # Implement the code to mark the user as having seen ads and record their details
+    # Here, we are recording the user's details in the verification channel
 
-    # Send the verification data to the channel
-    await client.send_message(VERIFICATION_CHANNEL_ID, message_text)
+    # Get the timestamp for the current time
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Create a message with the user's details and timestamp
+    message = f"User: {user.mention if user else 'Unknown'} (ID: {user.id if user else 'N/A'}) clicked on verification code: {verification_code} at {current_time}"
+
+    # Send this message to your verification channel
+    await client.send_message(VERIFICATION_CHANNEL_ID, message)
 
 # Your existing code for 'start_command' function
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id if message.from_user else None
 
-    # Check if the user is already verified
-    if VERIFY and not await is_verified_user(user_id):
+    # Check if the user is already verified and has seen ads
+    if VERIFY and await is_verified_user(user_id):
+        # User is already verified and has seen ads
+        await message.reply_text("You are verified for 24 hours.")
+    else:
         # Generate a verification token
         token = await get_verification_token(user_id)
 
@@ -124,19 +93,6 @@ async def start_command(client: Client, message: Message):
             text,
             reply_markup=reply_markup
         )
-    else:
-        # User is already verified or verification is disabled
-        await message.reply_text(
-            START_MSG,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([[
-                InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
-            ]])
-        )
-
-    # Check if the user has seen ads
-    if await has_seen_ads(user_id):
-        await message.reply_text("You are verified for 24 hours.")
 
 
 
