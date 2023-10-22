@@ -47,18 +47,29 @@ async def is_verified_user(user_id):
     return time_difference < timedelta(hours=24)
 
 # Function to mark a user as having seen ads
+# Function to mark a user as having seen ads
 async def mark_user_as_ad_seen(user_id):
     # Implement the code to mark the user as having seen ads
-    # This could involve storing a flag in your database
+    # For example, you can store a flag in your database
+    # Here's a hypothetical implementation using a dictionary as a database
+
+    # Check if the user already exists in your database
+    if user_id in ads_seen_users:
+        ads_seen_users[user_id] = True
+        # You can update a timestamp here to track when ads were last seen, if needed
+    else:
+        # If the user is not in the database, add them and mark as seen
+        ads_seen_users[user_id] = True
 
 # Function to check if a user has seen ads
 async def has_seen_ads(user_id):
     # Implement the code to check if the user has seen ads
     # This function should return True if the user has seen ads, and False otherwise
-    # Example logic for ad verification
-    ad_view_timestamp = await get_ad_view_timestamp(user_id)
-    if not ad_view_timestamp:
-        return False
+    # Here's a hypothetical implementation using a dictionary as a database
+
+    # Check if the user exists in the database and if they have seen ads
+    return user_id in ads_seen_users and ads_seen_users[user_id]
+
 
     # Define the ad verification time window (replace with your specific time)
     ad_verification_time = timedelta(hours=12)  # 12 hours
