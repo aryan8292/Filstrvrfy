@@ -22,12 +22,42 @@ import hashlib
 
 SECONDS = int(os.getenv("SECONDS", "10"))
 
-async def get_verification_token(user_id, expiration_time):
-    # Combine user_id and expiration_time to create a unique token
-    token_data = f"{user_id}:{expiration_time.timestamp()}"
+import secrets
+from datetime import datetime, timedelta
+from pymongo import MongoClient
 
-    # Generate a hash of the combined data
-    verification_token = hashlib.sha256(token_data.encode()).hexdigest()  # Use an appropriate hashing algorithm
+async def get_verification_token(user_id):
+    # Connect to the MongoDB database
+    client = MongoClient(DB_URI)
+    db = client[DB_NAME]
+
+    # Access the 'verification' collection (replace with your collection name)
+    collection = db.verification
+
+    # Find the user's verification data in the collection
+    user_data = collection.find_one({"user_id": user_id})
+
+    if user_data:
+        # Check if the existing token is still valid
+        current_time = datetime.now()
+        expiration_time = user_data.get("expiration_time")
+
+        if current_time <= expiration_time:
+            # Return the existing token
+            return user_data.get("token")
+    
+    # If no valid token is found, generate a new one
+    verification_token = secrets.token_hex(16)  # Generates a 32-character hexadecimal token
+
+    # Calculate the expiration time (24 hours from now)
+    expiration_time = datetime.now() + timedelta(hours=24)
+
+    # Update or insert the verification data in the collection
+    collection.update_one(
+        {"user_id": user_id},
+        {"$set": {"token": verification_token, "expiration_time": expiration_time}},
+        upsert=True  # Insert a new document if not found
+    )
 
     return verification_token
 
@@ -101,7 +131,7 @@ async def start_command(client, message):
             await message.reply_text("You are verified for 24 hours.")
         else:
             # Generate a verification token
-            token = await get_verification_token(user_id, expiration_time)
+            token = await get_verification_token(user_id)
 
             # Calculate the expiration time
             expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
