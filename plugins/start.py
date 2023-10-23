@@ -130,7 +130,7 @@ async def start_command(client: Client, message: Message):
         # Check if the user is verified for 24 hours using MongoDB logic
         if is_verified_for_24_hours(user_id):
             await message.reply_text("You are verified for 24 hours.")
-        elif len(message.text) > 7:
+        if len(message.text) > 7:
             # Handle the case where the user provides a valid command
             try:
                 base64_string = message.text.split(" ", 1)[1]
