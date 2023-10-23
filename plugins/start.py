@@ -88,7 +88,13 @@ async def start_command(client: Client, message: Message):
     user_id = message.from_user.id if message.from_user else None
 
     # Check if the user is already verified
-    if VERIFY and not await is_verified_user(user_id):
+if VERIFY:
+    ads_seen = await has_seen_ads(user_id)
+    
+    if ads_seen:
+        # User has seen ads and is verified
+        await message.reply_text("You are verified for 24 hours.")
+    else:
         # Generate a verification token
         token = await get_verification_token(user_id)
 
@@ -97,20 +103,13 @@ async def start_command(client: Client, message: Message):
 
         # Get the current date and time
         current_time = datetime.now()
-        
-        # Store the user data in the MongoDB collection
-        user_data = {
-            "user_id": user_id,
-            "ads_seen": True,
-        }
-        verification_collection.insert_one(user_data)
-        
+
         # Store the verification data in the MongoDB collection
         verification_data = {
             "user_id": user_id,
             "token": token,
             "expiration_time": expiration_time,
-            "timestamp": current_time,  # Insert the current timestamp
+            "timestamp": current_time,
         }
         verification_collection.insert_one(verification_data)
 
