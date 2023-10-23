@@ -76,10 +76,13 @@ async def is_verified_user(user_id):
         # Check if the verification timestamp is within the 24-hour window
         current_time = datetime.now()
         verification_timestamp = verification_data.get('timestamp')
-        time_difference = current_time - verification_timestamp
 
-        if time_difference < timedelta(hours=24):
-            return True  # User is verified
+        if verification_timestamp:
+            time_difference = current_time - verification_timestamp
+
+            if time_difference < timedelta(hours=24):
+                return True  # User is verified
+
     return False  # User is not verified
 
 async def mark_user_as_ad_seen(user_id):
