@@ -60,7 +60,6 @@ async def get_verification_token(user_id):
 
     return verification_token
 
-
 async def is_verified_user(user_id):
     # Connect to the MongoDB database
     client = MongoClient(DB_URI)
@@ -95,6 +94,29 @@ async def mark_user_as_ad_seen(user_id):
 
     # Update the user document to mark their "status_of_token" as "not active"
     collection.update_one({"user_id": user_id, "status_of_token": "active"}, {"$set": {"status_of_token": "not active"}})
+
+from pymongo import MongoClient
+from datetime import datetime, timedelta
+
+# Define your MongoDB connection details
+DB_URI = "your_mongodb_uri"
+DB_NAME = "your_database_name"
+
+# Function to update the verification status to "active"
+async def update_verification_status(user_id, status="active"):
+    # Connect to the MongoDB database
+    client = MongoClient(DB_URI)
+    db = client[DB_NAME]
+
+    # Access the 'verification' collection (replace with your collection name)
+    collection = db.verification
+
+    # Update the user's verification status to "active" based on the user_id
+    collection.update_one({"user_id": user_id}, {"$set": {"status_of_token": status}})
+
+# Example usage:
+# Call this function to update the verification status to "active" for a user
+await update_verification_status(user_id, "active")
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client, message):
