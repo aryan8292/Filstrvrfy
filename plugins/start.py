@@ -155,9 +155,6 @@ async def start_command(client: Client, message: Message):
     # Check if the user has seen ads
     if await has_seen_ads(user_id):
         await message.reply_text("You are verified for 24 hours.")
-
-
-
         
     if len(text) > 7:
         try:
@@ -253,10 +250,11 @@ async def start_command(client: Client, message: Message):
                 )
                 await asyncio.sleep(5)
                 await arg.delete()
+        
             chck = await check_token(client, userid, token)
-            if ckck == True:
+            if chck == True:
                 arg = await message.reply_text(
-                    text="You are Verified for today,\n\nNow you can use me.",
+                    text="You are Verified for 24 hours,\n\nNow you can use me.",
                     protect_content=False
                 )
                 await verify_user(client, userid, token)
