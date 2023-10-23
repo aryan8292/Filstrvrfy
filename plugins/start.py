@@ -138,47 +138,45 @@ async def start_command(client: Client, message: Message):
             ]])
         )
 
-    # Check if the user has seen ads
-    if await has_seen_ads(user_id):
-        await message.reply_text("You are verified for 24 hours.")
-        
-    if len(text) > 7:
-        try:
-            base64_string = text.split(" ", 1)[1]
-        except:
-            return
-        string = await decode(base64_string)
-        argument = string.split("-")
-        if len(argument) == 3:
+     # Check if the user has seen ads
+        if await has_seen_ads(user_id):
+            await message.reply_text("You are verified for 24 hours.")
+        else:
             try:
-                start = int(int(argument[1]) / abs(client.db_channel.id))
-                end = int(int(argument[2]) / abs(client.db_channel.id))
-            except:
-                return
-            if start <= end:
-                ids = range(start, end + 1)
-            else:
-                ids = []
-                i = start
-                while True:
-                    ids.append(i)
-                    i -= 1
-                    if i < end:
-                        break
-        elif len(argument) == 2:
-            try:
-                ids = [int(int(argument[1]) / abs(client.db_channel.id))]
-            except:
-                return
-        temp_msg = await message.reply("Please wait Baby...")
-        try:
-            messages = await get_messages(client, ids)
-        except:
-            await message.reply_text("Something went wrong..!")
-            return
-        await temp_msg.delete()
+                base64_string = message.text.split(" ", 1)[1]
+                string = await decode(base64_string)
+                argument = string.split("-")
 
-        snt_msgs = []
+                if len(argument) == 3:
+                    try:
+                        start = int(int(argument[1]) / abs(client.db_channel.id))
+                        end = int(int(argument[2]) / abs(client.db_channel.id))
+                    except:
+                        return
+                    if start <= end:
+                        ids = range(start, end + 1)
+                    else:
+                        ids = []
+                        i = start
+                        while True:
+                            ids.append(i)
+                            i -= 1
+                            if i < end:
+                                break
+                elif len(argument) == 2:
+                    try:
+                        ids = [int(int(argument[1]) / abs(client.db_channel.id))]
+                    except:
+                        return
+                temp_msg = await message.reply("Please wait Baby...")
+                try:
+                    messages = await get_messages(client, ids)
+                except:
+                    await temp_msg.edit("Something went wrong..!")
+                    return
+                await temp_msg.delete()
+
+                snt_msgs = []
 
         for msg in messages:
 
