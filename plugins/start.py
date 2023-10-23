@@ -83,123 +83,6 @@ async def has_seen_ads(user_id):
 
     return False  # User has not seen ads
 
-
-# Your existing code for 'start_command' function
-@Bot.on_message(filters.command('start') & filters.private)
-async def start_command(client: Client, message: Message):
-    user_id = message.from_user.id if message.from_user else None
-
-    # Check if the user is already verified
-    if VERIFY and not await is_verified_user(user_id):
-        # Generate a verification token
-        token = await get_verification_token(user_id)
-
-        # Calculate the expiration time
-        expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
-
-        # Store the verification data in the MongoDB collection
-        verification_data = {
-            "user_id": user_id,
-            "token": token,
-            "expiration_time": expiration_time,
-            "timestamp": ISODate("2023-10-23T12:34:56Z"),
-        }
-        verification_collection.insert_one(verification_data)
-
-        # Generate a message with the verification token
-        text = (
-            f"Welcome, {message.from_user.mention}!\n\n"
-            "To access our services, please verify your identity.\n\n"
-            f"Your verification token: {token}\n\n"
-            f"Your verification is valid for {VERIFY_EXPIRATION_HOURS} hours."
-        )
-
-        # Create a button for verification
-        button = InlineKeyboardButton(
-            "Verify",
-            url=await get_token(client, user_id, f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}")
-        )
-
-        # Create a reply markup with the verification button
-        reply_markup = InlineKeyboardMarkup([[button]])
-
-        # Send the verification message
-        await message.reply_text(
-            text,
-            reply_markup=reply_markup
-        )
-    else:
-        # User is already verified or verification is disabled
-        await message.reply_text(
-            START_MSG,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([[
-                InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
-            ]])
-        )
-
-      # Check if the user has seen ads
-        if await has_seen_ads(user_id):
-            await message.reply_text("You are verified for 24 hours.")
-        else:
-            try:
-                base64_string = message.text.split(" ", 1)[1]
-                string = await decode(base64_string)
-                argument = string.split("-")
-
-                if len(argument) == 3:
-                    try:
-                        start = int(int(argument[1]) / abs(client.db_channel.id))
-                        end = int(int(argument[2]) / abs(client.db_channel.id))
-                    except:
-                        return
-                    if start <= end:
-                        ids = range(start, end + 1)
-                    else:
-                        ids = []
-                        i = start
-                        while True:
-                            ids.append(i)
-                            i -= 1
-                            if i < end:
-                                break
-                elif len(argument) == 2:
-                    try:
-                        ids = [int(int(argument[1]) / abs(client.db_channel.id))]
-                    except:
-                        return
-                temp_msg = await message.reply("Please wait Baby...")
-                try:
-                    messages = await get_messages(client, ids)
-                except:
-                    await temp_msg.edit("Something went wrong..!")
-                    return
-                await temp_msg.delete()
-
-                snt_msgs = []
-
-                for msg in messages:
-                    if bool(CUSTOM_CAPTION) & bool(msg.document):
-                        caption = CUSTOM_CAPTION.format(
-                            previouscaption="" if not msg.caption else msg.caption.html,
-                            filename=msg.document.file_name,
-                        )
-                    else:
-                        caption = "" if not msg.caption else msg.caption.html
-
-                    if DISABLE_CHANNEL_BUTTON:
-                        reply_markup = msg.reply_markup
-                    else:
-                        reply_markup = None
-
-                    try:
-                        snt_msg = await msg.copy(
-                            chat_id=message.from_user.id,
-                            caption=caption,
-                            parse_mode=ParseMode.HTML,
-                            reply_markup=reply_markup,
-                            protect_content=PROTECT_CONTENT,
-                        )
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id if message.from_user else None
@@ -339,7 +222,7 @@ async def start_command(client: Client, message: Message):
                         pass
             except:
                 pass
-
+        
         # Add the final else block here with correct indentation
         else:
             reply_markup = InlineKeyboardMarkup(
@@ -350,6 +233,8 @@ async def start_command(client: Client, message: Message):
                     ]
                 ]
             )
+
+        # Continue with your code here
 
         
         data = message.command[1]
