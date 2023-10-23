@@ -138,6 +138,8 @@ async def start_command(client: Client, message: Message):
 
     # Check if the user has seen ads
     if await has_seen_ads(user_id):
+        # Redirect the user to the bot by generating a /start command
+        await client.send_message(user_id, "/start")
         await message.reply_text("You are verified for 24 hours.")
     if len(text) > 7:
         try:
