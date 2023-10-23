@@ -152,8 +152,8 @@ async def start_command(client, message):
             token = await get_verification_token(user_id)
 
             # Update or insert the verification data in the collection
-            await update_verification_status(user_id, "active")
             await update_verification_token(user_id, token)
+            update_verification_status(user_id, "active")
 
             # Store the verification data in the MongoDB collection
             verification_data = {
