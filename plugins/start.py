@@ -129,7 +129,6 @@ async def start_command(client, message):
                 "expiration_time": expiration_time,
                 "timestamp": current_time,
                 "status_of_token": status_of_token,
-                "ads_seen": False
             }
             verification_collection.insert_one(verification_data)
 
