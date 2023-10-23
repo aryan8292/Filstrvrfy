@@ -135,6 +135,48 @@ if update_result is True:
 else:
     print(f"Failed to update verification status: {update_result}")
 
+# Function to update the verification token and deactivate the previous one
+async def update_verification_token(user_id, new_token):
+    try:
+        # Connect to the MongoDB database
+        client = MongoClient(DB_URI)
+        db = client[DB_NAME]
+
+        # Access the 'verification' collection (replace with your collection name)
+        collection = db.verification
+
+        # Find the user's verification data in the collection
+        user_data = collection.find_one({"user_id": user_id})
+
+        if user_data:
+            # Deactivate the previous token
+            collection.update_one(
+                {"user_id": user_id, "token": user_data.get("token")},
+                {"$set": {"status_of_token": "inactive"}}
+            )
+
+            # Update the token to the new one
+            collection.update_one(
+                {"user_id": user_id},
+                {"$set": {"token": new_token, "status_of_token": "active"}}
+            )
+
+        # Close the MongoDB connection
+        client.close()
+        return True  # Return True to indicate a successful update
+    except Exception as e:
+        return str(e)  # Return the error message if an exception occurs
+
+# Example usage:
+# Call this function to update the verification token
+user_id = "your_user_id"
+new_token = "new_verification_token"
+update_result = update_verification_token(user_id, new_token)
+
+if update_result is True:
+    print(f"Verification token updated for user with ID {user_id}.")
+else:
+    print(f"Failed to update verification token: {update_result}")
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client, message):
