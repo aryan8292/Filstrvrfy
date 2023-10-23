@@ -61,6 +61,9 @@ async def mark_user_as_ad_seen(user_id):
     # Access the 'verification' collection (replace with your collection name)
     collection = db.verification
 
+    # User ID of the user who has seen the ad
+    user_id = 123456789  # Replace with the actual user ID
+
     # Update the user document to mark them as having seen ads
     collection.update_one({"user_id": user_id}, {"$set": {"ads_seen": True}})
 
