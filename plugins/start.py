@@ -123,7 +123,7 @@ def update_verification_status(user_id, status="active"):
 
 # Example usage:
 # Call this function to update the verification status to "active" for a user
-user_id = message.from_user.id if message.from_user else None
+user_id = "your_user_id"
 update_verification_status(user_id, "active")
 
 @Bot.on_message(filters.command('start') & filters.private)
