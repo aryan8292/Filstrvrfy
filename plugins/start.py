@@ -117,7 +117,7 @@ def update_verification_status(user_id, status="active"):
         collection = db.verification
 
         # Update the user's verification status to the specified status
-        collection.update_one({"user_id": user_id}, {"$set": {"status_of_token": status}}
+        collection.update_one({"user_id": user_id}, {"$set": {"status_of_token": status}})
 
         # Close the MongoDB connection
         client.close()
@@ -134,6 +134,7 @@ if update_result is True:
     print(f"User with ID {user_id} is now verified.")
 else:
     print(f"Failed to update verification status: {update_result}")
+
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client, message):
