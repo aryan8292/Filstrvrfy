@@ -22,14 +22,6 @@ import hashlib
 
 SECONDS = int(os.getenv("SECONDS", "10"))
 
-import secrets
-from datetime import datetime, timedelta
-from pymongo import MongoClient
-
-import secrets
-from datetime import datetime, timedelta
-from pymongo import MongoClient
-
 async def get_verification_token(user_id):
     # Connect to the MongoDB database
     client = MongoClient(DB_URI)
