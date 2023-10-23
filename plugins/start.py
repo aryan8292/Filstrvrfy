@@ -107,6 +107,18 @@ async def mark_user_as_ad_seen(user_id):
     # Update the user document to mark their "status_of_token" as "not active"
     collection.update_one({"user_id": user_id, "status_of_token": "active"}, {"$set": {"status_of_token": "not active"}})
 
+
+Sure, here's the rewritten code for updating the verification status without using await:
+
+python
+Copy code
+from pymongo import MongoClient
+from pymongo.errors import PyMongoError
+
+# Define your MongoDB connection details
+DB_URI = "your_mongodb_uri"
+DB_NAME = "your_database_name"
+
 def update_verification_status(user_id, status="active"):
     try:
         # Connect to the MongoDB database
@@ -117,13 +129,13 @@ def update_verification_status(user_id, status="active"):
         collection = db.verification
 
         # Update the user's verification status to the specified status
-        collection.update_one({"user_id": user_id}, {"$set": {"status_of_token": status}})
+        collection.update_one({"user_id": user_id}, {"$set": {"status_of_token": status}}
 
         # Close the MongoDB connection
         client.close()
         return True  # Return True to indicate a successful update
-    except Exception as e:
-        return str(e)  # Return the error message if an exception occurs
+    except PyMongoError as e:
+        return str(e)  # Return the error message if a PyMongoError occurs
 
 # Example usage:
 # Call this function to update the verification status to "active" for a user
