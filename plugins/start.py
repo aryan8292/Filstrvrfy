@@ -34,13 +34,6 @@ db = client[DB_NAME]
 # Access the 'verification' collection (replace with your collection name)
 collection = db.verification
 
-# Calculate the expiration time (24 hours from now)
-expiration_time = datetime.now() + timedelta(hours=24)
-
-# Print the expiration time
-print("Expiration Time:", expiration_time)
-
-
 async def get_verification_token(user_id):
     # Connect to the MongoDB database
     client = MongoClient(DB_URI)
@@ -129,6 +122,9 @@ async def start_command(client, message):
         else:
             # Generate a verification token if not verified
             token = await get_verification_token(user_id)
+
+            # Calculate the expiration time
+            expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
 
             # Store the verification data in the MongoDB collection
             verification_data = {
