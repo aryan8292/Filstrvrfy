@@ -93,7 +93,7 @@ async def mark_user_as_ad_seen(user_id):
     # Update the user document to mark them as having seen ads
     collection.update_one({"user_id": user_id}, {"$set": {"ads_seen": True}})
 
-async def has_seen_ads(user_id):
+async def mark_user_as_ad_seen(user_id):
     # Connect to the MongoDB database
     client = MongoClient(DB_URI)
     db = client[DB_NAME]
@@ -101,15 +101,8 @@ async def has_seen_ads(user_id):
     # Access the 'verification' collection (replace with your collection name)
     collection = db.verification
 
-    # Query the collection for the user's document
-    user_data = collection.find_one({"user_id": user_id, "status_of_token": "active"})
-
-    if user_data:
-        # Check if the user has seen ads based on the 'ads_seen' field
-        ads_seen = user_data.get("ads_seen", False)  # Default to False if "ads_seen" field is not present
-        return ads_seen
-
-    return False  # User has not seen ads
+    # Update the user document to mark them as having seen ads
+    collection.update_one({"user_id": user_id, "status_of_token": "active"}, {"$set": {"ads_seen": True}})
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client, message):
@@ -142,7 +135,7 @@ async def start_command(client, message):
                 "expiration_time": expiration_time,
                 "timestamp": current_time,
                 "status_of_token": status_of_token,  # Set "status_of_token" to "active" when creating the verification data
-                "ads_seen": False
+                "ads_seen": True,
             }
             verification_collection.insert_one(verification_data)
 
