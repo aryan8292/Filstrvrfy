@@ -61,7 +61,6 @@ async def get_verification_token(user_id):
     return verification_token
 
 
-# Function to check if a user is verified
 async def is_verified_user(user_id):
     # Connect to the MongoDB database
     client = MongoClient(DB_URI)
@@ -71,7 +70,7 @@ async def is_verified_user(user_id):
     collection = db.verification
 
     # Query the collection to find the verification data for the user
-    verification_data = collection.find_one({"user_id": user_id})
+    verification_data = collection.find_one({"user_id": user_id, "status_of_token": "active"})
 
     if verification_data:
         # Check if the verification timestamp is within the 24-hour window
@@ -83,7 +82,6 @@ async def is_verified_user(user_id):
             return True  # User is verified
     return False  # User is not verified
 
-# Function to mark a user as having seen ads
 async def mark_user_as_ad_seen(user_id):
     # Connect to the MongoDB database
     client = MongoClient(DB_URI)
@@ -92,13 +90,9 @@ async def mark_user_as_ad_seen(user_id):
     # Access the 'verification' collection (replace with your collection name)
     collection = db.verification
 
-    # User ID of the user who has seen the ad
-    user_id = 123456789  # Replace with the actual user ID
-
     # Update the user document to mark them as having seen ads
     collection.update_one({"user_id": user_id}, {"$set": {"ads_seen": True}})
 
-# Function to check if a user has seen ads
 async def has_seen_ads(user_id):
     # Connect to the MongoDB database
     client = MongoClient(DB_URI)
@@ -108,7 +102,7 @@ async def has_seen_ads(user_id):
     collection = db.verification
 
     # Query the collection for the user's document
-    user_data = collection.find_one({"user_id": user_id})
+    user_data = collection.find_one({"user_id": user_id, "status_of_token": "active"})
 
     if user_data:
         # Check if the user has seen ads based on the 'ads_seen' field
@@ -116,7 +110,6 @@ async def has_seen_ads(user_id):
         return ads_seen
 
     return False  # User has not seen ads
-
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client, message):
