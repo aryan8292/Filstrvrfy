@@ -21,65 +21,56 @@ SECONDS = int(os.getenv("SECONDS", "10"))
 
 # Function to check if a user is verified and has seen ads
 # Function to check if a user is verified
-async def is_verified_user(user_id, verification_collection):
-    # Check if the user is verified in your MongoDB
-    return await get_verification_status(user_id, verification_collection)
-
-# Function to get the verification status from your storage system
-# Function to get the verification status of a user from the database
-async def get_verification_status(user_id, verification_collection):
-    # Implement the logic to retrieve the verification status from your MongoDB
+async def is_verified_user(user_id):
+    # Implement the logic to check if the user is verified in your storage system
     # This function should return True if the user is verified, and False otherwise
-    # Query your MongoDB to check if the user is verified
-    # Replace 'verification_collection' with the actual name of your MongoDB collection
-    user = await verification_collection.find_one({'user_id': user_id})
-    return user is not None
+    # Also, check if the verification timestamp is within the 24-hour window
+    current_time = datetime.now()
+    verification_timestamp = await get_verification_timestamp(user_id)
 
-# Function to check if a user has seen ads and record the verification details
-async def has_seen_ads(client, user, verification_code, ads_collection, verification_channel_id):
-    # Implement the logic to check if the user has seen ads
-    # This function should return True if the user has seen ads, and False otherwise
-    # Additionally, record the verification details in your verification channel
-    if await ads_collection.count_documents({'user_id': user.id}) > 0:
-        # The user has seen ads
-        await mark_user_as_ad_seen(client, user, verification_code, verification_channel_id)
-        return True
-    else:
+    if not verification_timestamp:
         return False
 
-# Function to mark a user as having seen ads and record the details in the verification channel
-async def mark_user_as_ad_seen(client, user, verification_code, verification_channel_id):
-    # Implement the code to mark the user as having seen ads and record their details
-    # Record user details in your verification channel
-    verification_message = f"User: {user.mention} (ID: {user.id}) clicked on verification code: {verification_code}"
-    await client.send_message(verification_channel_id, verification_message)
+    # Calculate the time difference between the current time and the verification timestamp
+    time_difference = current_time - verification_timestamp
 
+    # Grant access if the time difference is within 24 hours
+    return time_difference < timedelta(hours=24)
 
-    # Get the timestamp for the current time
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+# Function to mark a user as having seen ads
+async def mark_user_as_ad_seen(user_id):
+    # Implement the code to mark the user as having seen ads
+    # For example, you can store a flag in your database
+    # Here, you can mark the user as seen in the verification collection
+    user_data = {
+        "_id": user_id,
+        "ads_seen": True
+    }
+    await verification_collection.insert_one(user_data)
 
-    # Create a message with the user's details and timestamp
-    message = f"User: {user.mention if user else 'Unknown'} (ID: {user.id if user else 'N/A'}) clicked on verification code: {verification_code} at {current_time}"
+# Function to check if a user has seen ads
+async def has_seen_ads(user_id):
+    # Implement the code to check if the user has seen ads
+    # This function should return True if the user has seen ads, and False otherwise
+    # You can check the verification collection for the "ads_seen" flag
+    user_data = await verification_collection.find_one({"_id": user_id})
+    return user_data and user_data.get("ads_seen", False)
 
-    # Send this message to your verification channel
-    await client.send_message(VERIFICATION_CHANNEL_ID, message)
-
-
-# Your 'start_command' function
+# Your existing code for 'start_command' function
 @Bot.on_message(filters.command('start') & filters.private)
-async def start_command(client, message):
+async def start_command(client: Client, message: Message):
     user_id = message.from_user.id if message.from_user else None
 
     # Check if the user is already verified
-    if VERIFY and not await is_verified_user(user_id, verification_collection):
+    if VERIFY and not await is_verified_user(user_id):
         # Generate a verification token
         token = await get_verification_token(user_id)
 
         # Calculate the expiration time
         expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
 
-        # Store the verification data in your MongoDB collection
-        await store_verification_data(verification_collection, user_id, token, expiration_time)
+        # Store the verification data (You can use your own storage method)
+        store_verification_data(user_id, token, expiration_time)
 
         # Generate a message with the verification token
         text = (
@@ -114,8 +105,9 @@ async def start_command(client, message):
         )
 
     # Check if the user has seen ads
-    if await has_seen_ads(client, message.from_user, token, ads_collection, verification_channel_id):
+    if await has_seen_ads(user_id):
         await message.reply_text("You are verified for 24 hours.")
+
 
         
     if len(text) > 7:
