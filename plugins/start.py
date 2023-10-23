@@ -221,7 +221,6 @@ async def start_command(client: Client, message: Message):
                     ]
                 ]
             )
-            # Continue with your code for the 'else' case
        
         data = message.command[1]
 
