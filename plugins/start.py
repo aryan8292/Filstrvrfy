@@ -131,7 +131,7 @@ async def start_command(client: Client, message: Message):
         if is_verified_for_24_hours(user_id):
             await message.reply_text("You are verified for 24 hours.")
             
-            if len(text) > 7:
+            elif len(text) > 7:
         try:
             base64_string = text.split(" ", 1)[1]
         except:
