@@ -221,10 +221,8 @@ async def start_command(client: Client, message: Message):
                     try:
                         await snt_msg.delete()
                     except:
-                        pass
-            except:
                 pass
-
+        
         return
     else:
         reply_markup = InlineKeyboardMarkup(
