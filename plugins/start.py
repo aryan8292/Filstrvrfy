@@ -20,85 +20,58 @@ from pymongo import MongoClient
 
 SECONDS = int(os.getenv("SECONDS", "10"))
 
-async def store_verification_data(user_id, token, expiration_time, verification_channel_id):
-    # Create a document to store the verification data
-    verification_data = {
-        "user_id": user_id,
-        "token": token,
-        "expiration_time": expiration_time,
-        "verification_channel_id": verification_channel_id,
-        "timestamp": datetime.now(),
-    }
-
-    # Insert the verification data document into the MongoDB collection
-    verification_collection.insert_one(verification_data)
-    
-async def get_verification_token(user_id):
-    # Implement the logic to generate a verification token
-    # This token can be a random string, a hash, or any unique identifier
-
-    # For example, you can use a library like `secrets` to generate a random token
-    import secrets
-    verification_token = secrets.token_hex(16)  # Generates a 32-character hexadecimal token
-
-    return verification_token
-
-def get_verification_timestamp(user_id):
+# Function to check if a user is verified
+async def is_verified_user(user_id):
     # Connect to the MongoDB database
     client = MongoClient(DB_URI)
-    db = client.Cluster0  # Replace 'mydatabase' with your actual database name
+    db = client[DB_NAME]
 
     # Access the 'verification' collection (replace with your collection name)
     collection = db.verification
 
-    # Query the collection to find the verification timestamp for the user
-    result = collection.find_one({'user_id': user_id})
+    # Query the collection to find the verification data for the user
+    verification_data = collection.find_one({"user_id": user_id})
 
-    if result:
-        return result.get('verification_timestamp')
-    else:
-        return None
+    if verification_data:
+        # Check if the verification timestamp is within the 24-hour window
+        current_time = datetime.now()
+        verification_timestamp = verification_data.get('timestamp')
+        time_difference = current_time - verification_timestamp
 
-# Function to check if a user is verified and has seen ads
-# Function to check if a user is verified
-async def is_verified_user(user_id):
-    # Implement the logic to check if the user is verified in your storage system
-    # This function should return True if the user is verified, and False otherwise
-    # Also, check if the verification timestamp is within the 24-hour window
-    current_time = datetime.now()
-    verification_timestamp = get_verification_timestamp(user_id)
-
-    if not verification_timestamp:
-        return False
-
-    # Calculate the time difference between the current time and the verification timestamp
-    time_difference = current_time - verification_timestamp
-
-    # Grant access if the time difference is within 24 hours
-    return time_difference < timedelta(hours=24)
+        if time_difference < timedelta(hours=24):
+            return True  # User is verified
+    return False  # User is not verified
 
 # Function to mark a user as having seen ads
 async def mark_user_as_ad_seen(user_id):
-    # Implement the code to mark the user as having seen ads
-    # For example, you can store a flag in your database
-    # Here, you can mark the user as seen in the verification collection
-    user_data = {
-        "_id": user_id,
-        "ads_seen": True
-    }
-    await verification_collection.insert_one(user_data)
+    # Connect to the MongoDB database
+    client = MongoClient(DB_URI)
+    db = client[DB_NAME]
+
+    # Access the 'verification' collection (replace with your collection name)
+    collection = db.verification
+
+    # Update the user document to mark them as having seen ads
+    collection.update_one({"user_id": user_id}, {"$set": {"ads_seen": True}})
 
 # Function to check if a user has seen ads
 async def has_seen_ads(user_id):
-    # Query the verification collection for the user document
-    user_data = verification_collection.find_one({"_id": user_id})
+    # Connect to the MongoDB database
+    client = MongoClient(DB_URI)
+    db = client[DB_NAME]
+
+    # Access the 'verification' collection (replace with your collection name)
+    collection = db.verification
+
+    # Query the collection for the user's document
+    user_data = collection.find_one({"user_id": user_id})
 
     if user_data and "ads_seen" in user_data:
-        # Check if the user has seen ads based on the value in the user document
+        # Check if the user has seen ads based on the 'ads_seen' field
         ads_seen = user_data["ads_seen"]
         return ads_seen
-       
-    return False
+
+    return False  # User has not seen ads
 
 
 # Your existing code for 'start_command' function
