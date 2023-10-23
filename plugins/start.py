@@ -100,7 +100,7 @@ async def start_command(client: Client, message: Message):
             "user_id": user_id,
             "token": token,
             "expiration_time": expiration_time,
-            "timestamp": current_time,  # Insert the current timestamp,
+            "timestamp": current_time,  # Insert the current timestamp
         }
         verification_collection.insert_one(verification_data)
 
