@@ -123,21 +123,20 @@ async def start_command(client, message):
             # Generate a verification token if not verified
             token = await get_verification_token(user_id)
 
-            # Calculate the expiration time
+           # Calculate the expiration time
             expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
 
-             # Get the current date and time
-             current_time = datetime.now()
+        # Get the current date and time
+        current_time = datetime.now()
 
-            # Store the verification data in the MongoDB collection
-            verification_data = {
-                "user_id": user_id,
-                "token": token,
-                "expiration_time": expiration_time,
-                "timestamp": current_time,
-                "status_of_token": status_of_token,
-            }
-            verification_collection.insert_one(verification_data)
+        # Store the verification data in the MongoDB collection
+        verification_data = {
+            "user_id": user_id,
+            "token": token,
+            "expiration_time": expiration_time,
+            "timestamp": current_time,
+        }
+        verification_collection.insert_one(verification_data)
 
             # Generate a message with the verification token
             text = (
