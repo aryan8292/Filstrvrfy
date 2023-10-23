@@ -90,11 +90,16 @@ async def mark_user_as_ad_seen(user_id):
 
 # Function to check if a user has seen ads
 async def has_seen_ads(user_id):
-    # Implement the code to check if the user has seen ads
-    # This function should return True if the user has seen ads, and False otherwise
-    # You can check the verification collection for the "ads_seen" flag
+    # Check if the user is in the verification collection
     user_data = await verification_collection.find_one({"_id": user_id})
-    return user_data and user_data.get("ads_seen", False)
+    
+    if user_data:
+        # Implement the logic to check if the user has seen ads
+        # You should use the user data you obtained to check if they've seen ads
+        return True  # Replace with your actual logic
+        
+    return False
+
 
 # Your existing code for 'start_command' function
 @Bot.on_message(filters.command('start') & filters.private)
