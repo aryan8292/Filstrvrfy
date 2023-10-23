@@ -110,7 +110,7 @@ async def start_command(client: Client, message: Message):
         expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
 
         # Get the ID of the verification channel
-        verification_channel_id = -1002037012620 # Replace with the actual channel ID
+        verification_channel_id = '-1002037012620' # Replace with the actual channel ID
 
         # Store the verification data
         await store_verification_data(user_id, token, expiration_time, verification_channel_id)
