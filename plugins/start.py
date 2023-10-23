@@ -26,6 +26,10 @@ import secrets
 from datetime import datetime, timedelta
 from pymongo import MongoClient
 
+import secrets
+from datetime import datetime, timedelta
+from pymongo import MongoClient
+
 async def get_verification_token(user_id):
     # Connect to the MongoDB database
     client = MongoClient(DB_URI)
@@ -52,14 +56,18 @@ async def get_verification_token(user_id):
     # Calculate the expiration time (24 hours from now)
     expiration_time = datetime.now() + timedelta(hours=24)
 
+    # Define the status of the token as "active"
+    status_of_token = "active"
+
     # Update or insert the verification data in the collection
     collection.update_one(
         {"user_id": user_id},
-        {"$set": {"token": verification_token, "expiration_time": expiration_time}},
+        {"$set": {"token": verification_token, "expiration_time": expiration_time, "status_of_token": status_of_token}},
         upsert=True  # Insert a new document if not found
     )
 
     return verification_token
+
 
 # Function to check if a user is verified
 async def is_verified_user(user_id):
