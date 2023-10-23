@@ -235,7 +235,7 @@ async def start_command(client: Client, message: Message):
                 ]
             ]
         )
-
+        
         data = message.command[1]
 
         if data.split("-", 1)[0] == "verify":
