@@ -122,21 +122,39 @@ DB_URI = "your_mongodb_uri"
 DB_NAME = "your_database_name"
 
 # Function to update the verification status to "active"
+from pymongo import MongoClient
+
+# Define your MongoDB connection details
+DB_URI = "your_mongodb_uri"  # Replace with your MongoDB URI
+DB_NAME = "your_database_name"  # Replace with your database name
+
 def update_verification_status(user_id, status="active"):
-    # Connect to the MongoDB database
-    client = MongoClient(DB_URI)
-    db = client[DB_NAME]
+    try:
+        # Connect to the MongoDB database
+        client = MongoClient(DB_URI)
+        db = client[DB_NAME]
 
-    # Access the 'verification' collection (replace with your collection name)
-    collection = db.verification
+        # Access the 'verification' collection (replace with your collection name)
+        collection = db.verification
 
-    # Update the user's verification status to "active" based on the user_id
-    collection.update_one({"user_id": user_id}, {"$set": {"status_of_token": status}})
+        # Update the user's verification status to the specified status
+        collection.update_one({"user_id": user_id}, {"$set": {"status_of_token": status}})
+
+        # Close the MongoDB connection
+        client.close()
+        return True  # Return True to indicate a successful update
+    except Exception as e:
+        return str(e)  # Return the error message if an exception occurs
 
 # Example usage:
 # Call this function to update the verification status to "active" for a user
 user_id = "your_user_id"
-update_verification_status(user_id, "active")
+update_result = update_verification_status(user_id, "active")
+
+if update_result is True:
+    print(f"User with ID {user_id} is now verified.")
+else:
+    print(f"Failed to update verification status: {update_result}")
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client, message):
