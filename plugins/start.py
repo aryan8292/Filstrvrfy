@@ -18,18 +18,18 @@ from datetime import datetime, timedelta
 import pymongo
 from pymongo import MongoClient
 import secrets
+import hashlib
 
 SECONDS = int(os.getenv("SECONDS", "10"))
 
 async def get_verification_token(user_id, expiration_time):
     # Combine user_id and expiration_time to create a unique token
-    token_data = f"{user_id}:{expiration_time}"
-    
+    token_data = f"{user_id}:{expiration_time.timestamp()}"
+
     # Generate a hash of the combined data
-    verification_token = secrets.token_hex(16)  # You can use a suitable hashing function
+    verification_token = hashlib.sha256(token_data.encode()).hexdigest()  # Use an appropriate hashing algorithm
 
     return verification_token
-
 
 # Function to check if a user is verified
 async def is_verified_user(user_id):
