@@ -26,7 +26,13 @@ database = dbclient["Cluster0"]
 
 # Create a collection and specify its name
 verification_collection = database["Pavovarification"]
+# Query the collection to find the verification timestamp for the user
+    result = collection.find_one({'user_id': user_id})
 
+    if result:
+        return result.get('verification_timestamp')
+    else:
+        return None
 # Function to check if a user is verified and has seen ads
 # Function to check if a user is verified
 async def is_verified_user(user_id):
