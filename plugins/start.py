@@ -83,6 +83,7 @@ async def has_seen_ads(user_id):
 
     return False  # User has not seen ads
 
+
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client, message):
     user_id = message.from_user.id if message.from_user else None
