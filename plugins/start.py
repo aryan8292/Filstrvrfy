@@ -167,7 +167,7 @@ async def update_verification_token(user_id, new_token, new_expiration_time):
 user_id = "your_user_id"
 new_token = "your_new_token"
 new_expiration_time = datetime.now() + timedelta(hours=24)
-update_result = update_verification_token(user_id, new_token, new_expiration_time)
+await update_verification_token(user_id, new_token, new_expiration_time)
 
 if update_result is True:
     print(f"Token updated for user with ID {user_id}.")
