@@ -88,13 +88,7 @@ async def start_command(client, message):
     user_id = message.from_user.id if message.from_user else None
 
     # Check if the user is already verified
-if VERIFY:
-    ads_seen = await has_seen_ads(user_id)
-    
-    if ads_seen:
-        # User has seen ads and is verified
-        await message.reply_text("You are verified for 24 hours.")
-    else:
+    if VERIFY and not await is_verified_user(user_id):
         # Generate a verification token
         token = await get_verification_token(user_id)
 
@@ -109,7 +103,7 @@ if VERIFY:
             "user_id": user_id,
             "token": token,
             "expiration_time": expiration_time,
-            "timestamp": current_time,
+            "timestamp": current_time,  # Insert the current timestamp
         }
         verification_collection.insert_one(verification_data)
 
@@ -133,20 +127,20 @@ if VERIFY:
         # Send the verification message
         await message.reply_text(text, reply_markup=reply_markup)
     else:
-        # User is already verified or verification is disabled
-        await message.reply_text(
-            START_MSG,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([[
-                InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
-            ]])
-        )
-
-    # Check if the user has seen ads
-    if await has_seen_ads(user_id):
-        await message.reply_text("You are verified for 24 hours.")
-        # Redirect the user to the bot by generating a /start command
-        await client.send_message(user_id, "/start")
+        # Check if the user has seen ads
+        if await has_seen_ads(user_id):
+            # Redirect the user to the bot by generating a /start command
+            await client.send_message(user_id, "/start")
+            await message.reply_text("You are verified for 24 hours.")
+        else:
+            # User is already verified or verification is disabled
+            await message.reply_text(
+                START_MSG,
+                disable_web_page_preview=True,
+                reply_markup=InlineKeyboardMarkup([[
+                    InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
+                ]])
+            )
         
     if len(text) > 7:
         try:
