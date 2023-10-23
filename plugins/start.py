@@ -18,6 +18,14 @@ from datetime import datetime, timedelta
 import pymongo
 
 SECONDS = int(os.getenv("SECONDS", "10"))
+from pymongo import MongoClient
+
+# Initialize your MongoDB client and database (ensure you have a valid DB_URI)
+dbclient = MongoClient("mongodb+srv://tk22kalal:x29uNTtjSHt6JG8n@cluster0.wt3scsz.mongodb.net/?retryWrites=true&w=majority")
+database = dbclient["Cluster0"]
+
+# Create a collection and specify its name
+verification_collection = database["Pavovarification"]
 
 # Function to check if a user is verified and has seen ads
 # Function to check if a user is verified
