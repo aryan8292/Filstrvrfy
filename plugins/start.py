@@ -126,101 +126,102 @@ async def start_command(client: Client, message: Message):
             text,
             reply_markup=reply_markup
         )
-    elif len(message.text) > 7:
-        # Handle the case where the user provides a valid command
-        try:
-            base64_string = message.text.split(" ", 1)[1]
-            string = await decode(base64_string)
-            argument = string.split("-")
-
-            if len(argument) == 3:
-                try:
-                    start = int(int(argument[1]) / abs(client.db_channel.id))
-                    end = int(int(argument[2]) / abs(client.db_channel.id))
-                except:
-                    return
-                if start <= end:
-                    ids = range(start, end + 1)
-                else:
-                    ids = []
-                    i = start
-                    while True:
-                        ids.append(i)
-                        i -= 1
-                        if i < end:
-                            break
-            elif len(argument) == 2:
-                try:
-                    ids = [int(int(argument[1]) / abs(client.db_channel.id))]
-                except:
-                    return
-            temp_msg = await message.reply("Please wait Baby...")
-            try:
-                messages = await get_messages(client, ids)
-            except:
-                await temp_msg.edit("Something went wrong..!")
-                return
-            await temp_msg.delete()
-
-            snt_msgs = []
-
-            for msg in messages:
-                if bool(CUSTOM_CAPTION) & bool(msg.document):
-                    caption = CUSTOM_CAPTION.format(
-                        previouscaption="" if not msg.caption else msg.caption.html,
-                        filename=msg.document.file_name,
-                    )
-                else:
-                    caption = "" if not msg.caption else msg.caption.html
-
-                if DISABLE_CHANNEL_BUTTON:
-                    reply_markup = msg.reply_markup
-                else:
-                    reply_markup = None
-
-                try:
-                    snt_msg = await msg.copy(
-                        chat_id=message.from_user.id,
-                        caption=caption,
-                        parse_mode=ParseMode.HTML,
-                        reply_markup=reply_markup,
-                        protect_content=PROTECT_CONTENT,
-                    )
-                    await asyncio.sleep(0.5)
-                    snt_msgs.append(snt_msg)
-                except FloodWait as e:
-                    await asyncio.sleep(e.x)
-                    snt_msg = await msg.copy(
-                        chat_id=message.from_user.id,
-                        caption=caption,
-                        parse_mode=ParseMode.HTML,
-                        reply_markup=reply_markup,
-                        protect_content=PROTECT_CONTENT,
-                    )
-                    snt_msgs.append(snt_msg)
-                except:
-                    pass
-
-            await asyncio.sleep(SECONDS)
-
-            for snt_msg in snt_msgs:
-                try:
-                    await snt_msg.delete()
-                except:
-                    pass
     else:
         # Check if the user is verified for 24 hours using MongoDB logic
         if is_verified_for_24_hours(user_id):
             await message.reply_text("You are verified for 24 hours.")
-        else:
-            reply_markup = InlineKeyboardMarkup(
-                [
+        elif len(message.text) > 7:
+            # Handle the case where the user provides a valid command
+            try:
+                base64_string = message.text.split(" ", 1)[1]
+                string = await decode(base64_string)
+                argument = string.split("-")
+
+                if len(argument) == 3:
+                    try:
+                        start = int(int(argument[1]) / abs(client.db_channel.id))
+                        end = int(int(argument[2]) / abs(client.db_channel.id))
+                    except:
+                        return
+                    if start <= end:
+                        ids = range(start, end + 1)
+                    else:
+                        ids = []
+                        i = start
+                        while True:
+                            ids.append(i)
+                            i -= 1
+                            if i < end:
+                                break
+                elif len(argument) == 2:
+                    try:
+                        ids = [int(int(argument[1]) / abs(client.db_channel.id))]
+                    except:
+                        return
+                temp_msg = await message.reply("Please wait Baby...")
+                try:
+                    messages = await get_messages(client, ids)
+                except:
+                    await temp_msg.edit("Something went wrong..!")
+                    return
+                await temp_msg.delete()
+
+                snt_msgs = []
+
+                for msg in messages:
+                    if bool(CUSTOM_CAPTION) & bool(msg.document):
+                        caption = CUSTOM_CAPTION.format(
+                            previouscaption="" if not msg.caption else msg.caption.html,
+                            filename=msg.document.file_name,
+                        )
+                    else:
+                        caption = "" if not msg.caption else msg.caption.html
+
+                    if DISABLE_CHANNEL_BUTTON:
+                        reply_markup = msg.reply_markup
+                    else:
+                        reply_markup = None
+
+                    try:
+                        snt_msg = await msg.copy(
+                            chat_id=message.from_user.id,
+                            caption=caption,
+                            parse_mode=ParseMode.HTML,
+                            reply_markup=reply_markup,
+                            protect_content=PROTECT_CONTENT,
+                        )
+                        await asyncio.sleep(0.5)
+                        snt_msgs.append(snt_msg)
+                    except FloodWait as e:
+                        await asyncio.sleep(e.x)
+                        snt_msg = await msg.copy(
+                            chat_id=message.from_user.id,
+                            caption=caption,
+                            parse_mode=ParseMode.HTML,
+                            reply_markup=reply_markup,
+                            protect_content=PROTECT_CONTENT,
+                        )
+                        snt_msgs.append(snt_msg)
+                    except:
+                        pass
+
+                await asyncio.sleep(SECONDS)
+
+                for snt_msg in snt_msgs:
+                    try:
+                        await snt_msg.delete()
+                    except:
+                        pass
+            else:
+                reply_markup = InlineKeyboardMarkup(
                     [
-                        InlineKeyboardButton("😊 About Me", callback_data="about"),
-                        InlineKeyboardButton("🔒 Close", callback_data="close")
+                        [
+                            InlineKeyboardButton("😊 About Me", callback_data="about"),
+                            InlineKeyboardButton("🔒 Close", callback_data="close")
+                        ]
                     ]
-                ]
-            )
+                )
+
       
         data = message.command[1]
 
