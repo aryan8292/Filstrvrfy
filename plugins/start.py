@@ -97,6 +97,12 @@ async def start_command(client: Client, message: Message):
 
         # Get the current date and time
         current_time = datetime.now()
+        
+        # Store the user data in the MongoDB collection
+        user_data = {
+            "user_id": user_id,
+            "ads_seen": True,
+        }
 
         # Store the verification data in the MongoDB collection
         verification_data = {
