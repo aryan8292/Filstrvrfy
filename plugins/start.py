@@ -23,7 +23,7 @@ import hashlib
 SECONDS = int(os.getenv("SECONDS", "10"))
 
 # Define your MongoDB connection details
-DB_URI = "mongodb+srv://nepiyac811:ligz7es0j77woCgF@cluster0.4mfybgo.mongodb.net/?retryWrites=true&w=majority"
+DB_URI = "mongodb+srv://tamecoy270:3Co7M2Ptibeh7oUQ@cluster0.a4lxwlf.mongodb.net/?retryWrites=true&w=majority"
 DB_NAME = "Cluster0"
 VERIFY_EXPIRATION_HOURS = 24
 
