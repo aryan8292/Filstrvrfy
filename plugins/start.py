@@ -22,7 +22,7 @@ SECONDS = int(os.getenv("SECONDS", "10"))
 
 def get_verification_timestamp(user_id):
     # Connect to the MongoDB database
-    client = MongoClient(MONGO_URI)
+    client = MongoClient(DB_URI)
     db = client.Cluster0  # Replace 'mydatabase' with your actual database name
 
     # Access the 'verification' collection (replace with your collection name)
