@@ -58,7 +58,6 @@ async def get_verification_token(user_id):
     verification_token = secrets.token_hex(16)  # Generates a 32-character hexadecimal token
 
     # Calculate the expiration time (24 hours from now)
-        current_time = datetime.now()
         expiration_time = current_time + timedelta(hours=24) 
 
     # Define the status of the token as "active"
