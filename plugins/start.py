@@ -90,14 +90,14 @@ async def mark_user_as_ad_seen(user_id):
 
 # Function to check if a user has seen ads
 async def has_seen_ads(user_id):
-    # Check if the user is in the verification collection
-    user_data = await verification_collection.find_one({"_id": user_id})
-    
-    if user_data:
-        # Implement the logic to check if the user has seen ads
-        # You should use the user data you obtained to check if they've seen ads
-        return True  # Replace with your actual logic
-        
+    # Query the verification collection for the user document
+    user_data = verification_collection.find_one({"_id": user_id})
+
+    if user_data and "ads_seen" in user_data:
+        # Check if the user has seen ads based on the value in the user document
+        ads_seen = user_data["ads_seen"]
+        return ads_seen
+       
     return False
 
 
