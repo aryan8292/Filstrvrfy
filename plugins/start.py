@@ -135,40 +135,45 @@ if update_result is True:
 else:
     print(f"Failed to update verification status: {update_result}")
 
-# Function to update the verification token and deactivate the previous one
-async def update_verification_token(user_id, token, expiration_time):
-    # Connect to the MongoDB database
-    client = MongoClient(DB_URI)
-    db = client[DB_NAME]
+# Function to update the verification token and expiration time
+async def update_verification_token(user_id, new_token, new_expiration_time):
+    try:
+        # Connect to the MongoDB database
+        client = MongoClient(DB_URI)
+        db = client[DB_NAME]
 
-    # Access the 'verification' collection (replace with your collection name)
-    collection = db.verification
+        # Access the 'verification' collection (replace with your collection name)
+        collection = db.verification
 
-    # Update the user's verification token and expiration time based on the user_id
-    await collection.update_one(
-        {"user_id": user_id},
-        {
-            "$set": {
-                "token": token,
-                "expiration_time": expiration_time,
+        # Update the user's verification token and expiration time based on the user_id
+        collection.update_one(
+            {"user_id": user_id},
+            {
+                "$set": {
+                    "token": new_token,
+                    "expiration_time": new_expiration_time
+                }
             }
-        }
-    )
+        )
 
-    # Close the MongoDB connection
-    client.close()
-
+        # Close the MongoDB connection
+        client.close()
+        return True  # Return True to indicate a successful update
+    except Exception as e:
+        return str(e)  # Return the error message if an exception occurs
 
 # Example usage:
-# Call this function to update the verification token
+# Call this function to update the verification token and expiration time for a user
 user_id = "your_user_id"
-new_token = "new_verification_token"
-update_result = update_verification_token(user_id, new_token)
+new_token = "your_new_token"
+new_expiration_time = datetime.now() + timedelta(hours=24)
+update_result = update_verification_token(user_id, new_token, new_expiration_time)
 
 if update_result is True:
-    print(f"Verification token updated for user with ID {user_id}.")
+    print(f"Token updated for user with ID {user_id}.")
 else:
-    print(f"Failed to update verification token: {update_result}")
+    print(f"Failed to update token: {update_result}")
+
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client, message):
