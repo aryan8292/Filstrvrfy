@@ -77,11 +77,16 @@ async def has_seen_ads(user_id):
     user_data = collection.find_one({"user_id": user_id})
 
     if user_data and "ads_seen" in user_data:
-        # Check if the user has seen ads based on the 'ads_seen' field
-        ads_seen = user_data["ads_seen"]
-        return ads_seen
-
-    return False  # User has not seen ads
+            # Check if the user has seen ads based on the 'ads_seen' field
+            ads_seen = user_data["ads_seen"]
+            return ads_seen
+        else:
+            return False
+    except Exception as e:
+        print(f"Error in has_seen_ads: {e}")
+        return False
+    finally:
+        client.close()
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
