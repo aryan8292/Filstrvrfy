@@ -126,7 +126,7 @@ async def start_command(client: Client, message: Message):
             text,
             reply_markup=reply_markup
         )
-    if len(message.text) > 7:
+    elif len(message.text) > 7:
         # Handle the case where the user provides a valid command
         try:
             base64_string = message.text.split(" ", 1)[1]
@@ -221,7 +221,7 @@ async def start_command(client: Client, message: Message):
                     ]
                 ]
             )
-       
+      
         data = message.command[1]
 
         if data.split("-", 1)[0] == "verify":
