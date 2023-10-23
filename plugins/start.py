@@ -40,6 +40,7 @@ expiration_time = datetime.now() + timedelta(hours=24)
 # Print the expiration time
 print("Expiration Time:", expiration_time)
 
+
 async def get_verification_token(user_id):
     # Connect to the MongoDB database
     client = MongoClient(DB_URI)
