@@ -49,7 +49,7 @@ def get_verification_timestamp(user_id):
     db = client.Cluster0  # Replace 'mydatabase' with your actual database name
 
     # Access the 'verification' collection (replace with your collection name)
-    collection = db.pavoverification
+    collection = db.verification
 
     # Query the collection to find the verification timestamp for the user
     result = collection.find_one({'user_id': user_id})
