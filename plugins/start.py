@@ -103,7 +103,14 @@ DB_URI = "your_mongodb_uri"
 DB_NAME = "your_database_name"
 
 # Function to update the verification status to "active"
-async def update_verification_status(user_id, status="active"):
+from pymongo import MongoClient
+
+# Define your MongoDB connection details
+DB_URI = "your_mongodb_uri"
+DB_NAME = "your_database_name"
+
+# Function to update the verification status to "active"
+def update_verification_status(user_id, status="active"):
     # Connect to the MongoDB database
     client = MongoClient(DB_URI)
     db = client[DB_NAME]
@@ -116,7 +123,8 @@ async def update_verification_status(user_id, status="active"):
 
 # Example usage:
 # Call this function to update the verification status to "active" for a user
-await update_verification_status(user_id, "active")
+user_id = message.from_user.id if message.from_user else None
+update_verification_status(user_id, "active")
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client, message):
