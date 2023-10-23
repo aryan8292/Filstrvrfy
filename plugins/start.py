@@ -121,24 +121,17 @@ async def start_command(client: Client, message: Message):
         # Create a reply markup with the verification button
         reply_markup = InlineKeyboardMarkup([[button]])
 
-        # Send the verification message
-        await message.reply_text(
-            text,
-            reply_markup=reply_markup
-        )
-    else:
-        # Check if the user is verified for 24 hours using MongoDB logic
-        if is_verified_for_24_hours(user_id):
-            await message.reply_text("You are verified for 24 hours.")
-            
-            elif len(text) > 7:
-        try:
-            base64_string = text.split(" ", 1)[1]
-        except:
-            return
+       # Send the verification message
+await message.reply_text(text, reply_markup=reply_markup)
+
+if is_verified_for_24_hours(user_id):
+    await message.reply_text("You are verified for 24 hours.")
+elif len(text) > 7:
+    try:
+        base64_string = text.split(" ", 1)[1]
         string = await decode(base64_string)
         argument = string.split("-")
-
+        
         if len(argument) == 3:
             try:
                 start = int(int(argument[1]) / abs(client.db_channel.id))
@@ -217,7 +210,6 @@ async def start_command(client: Client, message: Message):
                 await snt_msg.delete()
             except:
                 pass
-
     else:
         reply_markup = InlineKeyboardMarkup(
             [
@@ -227,8 +219,7 @@ async def start_command(client: Client, message: Message):
                 ]
             ]
         )
-
-      
+       
         data = message.command[1]
 
         if data.split("-", 1)[0] == "verify":
