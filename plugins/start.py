@@ -19,6 +19,20 @@ import pymongo
 from pymongo import MongoClient
 
 SECONDS = int(os.getenv("SECONDS", "10"))
+
+async def store_verification_data(user_id, token, expiration_time, verification_channel_id):
+    # Create a document to store the verification data
+    verification_data = {
+        "user_id": user_id,
+        "token": token,
+        "expiration_time": expiration_time,
+        "verification_channel_id": verification_channel_id,
+        "timestamp": datetime.now(),
+    }
+
+    # Insert the verification data document into the MongoDB collection
+    verification_collection.insert_one(verification_data)
+    
 async def get_verification_token(user_id):
     # Implement the logic to generate a verification token
     # This token can be a random string, a hash, or any unique identifier
