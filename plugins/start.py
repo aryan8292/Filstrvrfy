@@ -139,15 +139,20 @@ async def start_command(client, message):
             # Get the current date and time
             current_time = datetime.now()
 
+            # Define the status of the token
+            status_of_token = "active"
+
             # Store the verification data in the MongoDB collection
             verification_data = {
                 "user_id": user_id,
                 "token": token,
                 "expiration_time": expiration_time,
                 "timestamp": current_time,
-                "ads_seen": False  # Set "ads_seen" to False when creating the verification data
+                "status_of_token": status_of_token,  # Set "status_of_token" to "active" when creating the verification data
+                "ads_seen": False
             }
             verification_collection.insert_one(verification_data)
+
 
         # Generate a message with the verification token
         text = (
