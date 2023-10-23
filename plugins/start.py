@@ -210,16 +210,17 @@ elif len(text) > 7:
                 await snt_msg.delete()
             except:
                 pass
-    else:
-        reply_markup = InlineKeyboardMarkup(
+else:
+    reply_markup = InlineKeyboardMarkup(
+        [
             [
-                [
-                    InlineKeyboardButton("😊 About Me", callback_data="about"),
-                    InlineKeyboardButton("🔒 Close", callback_data="close")
-                ]
+                InlineKeyboardButton("😊 About Me", callback_data="about"),
+                InlineKeyboardButton("🔒 Close", callback_data="close")
             ]
-        )
-       
+        ]
+    )
+
+ 
         data = message.command[1]
 
         if data.split("-", 1)[0] == "verify":
