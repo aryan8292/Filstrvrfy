@@ -103,7 +103,8 @@ async def start_command(client: Client, message: Message):
             "user_id": user_id,
             "ads_seen": True,
         }
-
+        verification_collection.insert_one(user_data)
+        
         # Store the verification data in the MongoDB collection
         verification_data = {
             "user_id": user_id,
