@@ -124,23 +124,23 @@ async def start_command(client: Client, message: Message):
         # Create a reply markup with the verification button
         reply_markup = InlineKeyboardMarkup([[button]])
 
-       # Send the verification message
+        # Send the verification message
         await message.reply_text(text, reply_markup=reply_markup)
     else:
-        # User is already verified or verification is disabled
-        await message.reply_text(
-            START_MSG,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([[
-                InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
-            ]])
-        )
-
-    # Check if the user has seen ads
-    if await has_seen_ads(user_id):
-        # Redirect the user to the bot by generating a /start command
-        await client.send_message(user_id, "/start")
-        await message.reply_text("You are verified for 24 hours.")
+        # Check if the user has seen ads
+        if await has_seen_ads(user_id):
+            # Redirect the user to the bot by generating a /start command
+            await client.send_message(user_id, "/start")
+            await message.reply_text("You are verified for 24 hours.")
+        else:
+            # User is already verified or verification is disabled
+            await message.reply_text(
+                START_MSG,
+                disable_web_page_preview=True,
+                reply_markup=InlineKeyboardMarkup([[
+                    InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
+                ]])
+            )
     if len(text) > 7:
         try:
             base64_string = text.split(" ", 1)[1]
