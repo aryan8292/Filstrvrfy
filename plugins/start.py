@@ -107,79 +107,6 @@ async def mark_user_as_ad_seen(user_id):
     # Update the user document to mark their "status_of_token" as "not active"
     collection.update_one({"user_id": user_id, "status_of_token": "active"}, {"$set": {"status_of_token": "not active"}})
 
-def update_verification_status(user_id, status="active"):
-    try:
-        # Connect to the MongoDB database
-        client = MongoClient(DB_URI)
-        db = client[DB_NAME]
-
-        # Access the 'verification' collection (replace with your collection name)
-        collection = db.verification
-
-        # Update the user's verification status to the specified status
-        collection.update_one({"user_id": user_id}, {"$set": {"status_of_token": status}})
-
-        # Close the MongoDB connection
-        client.close()
-        return True  # Return True to indicate a successful update
-    except PyMongoError as e:
-        return str(e)  # Return the error message if a PyMongoError occurs
-
-# Example usage:
-# Call this function to update the verification status to "active" for a user
-user_id = "your_user_id"
-update_result = update_verification_status(user_id, "active")
-
-if update_result is True:
-    print(f"User with ID {user_id} is now verified.")
-else:
-    print(f"Failed to update verification status: {update_result}")
-
-# Function to update the verification token and expiration time
-async def update_verification_token(user_id, new_token, new_expiration_time):
-    try:
-        # Connect to the MongoDB database
-        client = MongoClient(DB_URI)
-        db = client[DB_NAME]
-
-        # Access the 'verification' collection (replace with your collection name)
-        collection = db.verification
-
-        # Update the user's verification token and expiration time based on the user_id
-        result = await collection.update_one(
-            {"user_id": user_id},
-            {
-                "$set": {
-                    "token": new_token,
-                    "expiration_time": new_expiration_time
-                }
-            }
-        )
-
-        # Close the MongoDB connection
-        client.close()
-
-        if result.modified_count == 1:
-            return True  # Return True to indicate a successful update
-        else:
-            return "User not found or not updated."
-
-    except Exception as e:
-        return str(e)  # Return the error message if an exception occurs
-
-# Example usage:
-# Call this function to update the verification token and expiration time for a user
-user_id = "your_user_id"
-new_token = "your_new_token"
-new_expiration_time = datetime.now() + timedelta(hours=24)
-update_result = await update_verification_token(user_id, new_token, new_expiration_time)
-
-if update_result is True:
-    print(f"Token updated for user with ID {user_id}.")
-else:
-    print(f"Failed to update token: {update_result}")
-
-
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client, message):
@@ -195,10 +122,6 @@ async def start_command(client, message):
         else:
             # Generate a verification token if not verified
             token = await get_verification_token(user_id)
-
-            # Update or insert the verification data in the collection
-            update_verification_token(user_id, token)
-            update_verification_status(user_id, "active")
 
             # Store the verification data in the MongoDB collection
             verification_data = {
