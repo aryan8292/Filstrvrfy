@@ -95,6 +95,9 @@ async def start_command(client: Client, message: Message):
         # Calculate the expiration time
         expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
 
+        # Get the current date and time
+        current_time = datetime.now()
+
         # Store the verification data in the MongoDB collection
         verification_data = {
             "user_id": user_id,
