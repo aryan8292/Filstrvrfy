@@ -126,7 +126,7 @@ async def start_command(client: Client, message: Message):
             text,
             reply_markup=reply_markup
         )
-    elif len(message.text) > 7:
+    if len(message.text) > 7:
         # Handle the case where the user provides a valid command
         try:
             base64_string = message.text.split(" ", 1)[1]
