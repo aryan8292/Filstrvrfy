@@ -84,7 +84,7 @@ async def has_seen_ads(user_id):
     return False  # User has not seen ads
 
 @Bot.on_message(filters.command('start') & filters.private)
-async def start_command(client: Client, message: Message):
+async def start_command(client, message):
     user_id = message.from_user.id if message.from_user else None
 
     # Check if the user is already verified
@@ -133,20 +133,21 @@ if VERIFY:
         # Send the verification message
         await message.reply_text(text, reply_markup=reply_markup)
     else:
-        # Check if the user has seen ads
-        if await has_seen_ads(user_id):
-            # Redirect the user to the bot by generating a /start command
-            await client.send_message(user_id, "/start")
-            await message.reply_text("You are verified for 24 hours.")
-        else:
-            # User is already verified or verification is disabled
-            await message.reply_text(
-                START_MSG,
-                disable_web_page_preview=True,
-                reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
-                ]])
-            )
+        # User is already verified or verification is disabled
+        await message.reply_text(
+            START_MSG,
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
+            ]])
+        )
+
+    # Check if the user has seen ads
+    if await has_seen_ads(user_id):
+        await message.reply_text("You are verified for 24 hours.")
+        # Redirect the user to the bot by generating a /start command
+        await client.send_message(user_id, "/start")
+        
     if len(text) > 7:
         try:
             base64_string = text.split(" ", 1)[1]
