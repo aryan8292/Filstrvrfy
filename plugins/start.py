@@ -122,16 +122,28 @@ async def start_command(client: Client, message: Message):
         reply_markup = InlineKeyboardMarkup([[button]])
 
        # Send the verification message
-await message.reply_text(text, reply_markup=reply_markup)
+        await message.reply_text(text, reply_markup=reply_markup)
+    else:
+        # User is already verified or verification is disabled
+        await message.reply_text(
+            START_MSG,
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
+            ]])
+        )
 
-if is_verified_for_24_hours(user_id):
-    await message.reply_text("You are verified for 24 hours.")
-elif len(text) > 7:
-    try:
-        base64_string = text.split(" ", 1)[1]
+    # Check if the user has seen ads
+    if await has_seen_ads(user_id):
+        await message.reply_text("You are verified for 24 hours.")
+    if len(text) > 7:
+        try:
+            base64_string = text.split(" ", 1)[1]
+        except:
+            return
         string = await decode(base64_string)
         argument = string.split("-")
-        
+
         if len(argument) == 3:
             try:
                 start = int(int(argument[1]) / abs(client.db_channel.id))
@@ -210,17 +222,17 @@ elif len(text) > 7:
                 await snt_msg.delete()
             except:
                 pass
-else:
-    reply_markup = InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton("😊 About Me", callback_data="about"),
-                InlineKeyboardButton("🔒 Close", callback_data="close")
-            ]
-        ]
-    )
 
- 
+    else:
+        reply_markup = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton("😊 About Me", callback_data="about"),
+                    InlineKeyboardButton("🔒 Close", callback_data="close")
+                ]
+            ]
+        )
+
         data = message.command[1]
 
         if data.split("-", 1)[0] == "verify":
