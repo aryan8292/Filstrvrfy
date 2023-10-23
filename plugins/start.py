@@ -20,15 +20,16 @@ from pymongo import MongoClient
 import secrets
 
 SECONDS = int(os.getenv("SECONDS", "10"))
-# Placeholder for the get_verification_token function
-async def get_verification_token(user_id):
-    # Implement the logic to generate a verification token
-    # This token can be a random string, a hash, or any unique identifier
 
-    # For example, you can use a library like `secrets` to generate a random token
-    verification_token = secrets.token_hex(16)  # Generates a 32-character hexadecimal token
+async def get_verification_token(user_id, expiration_time):
+    # Combine user_id and expiration_time to create a unique token
+    token_data = f"{user_id}:{expiration_time}"
+    
+    # Generate a hash of the combined data
+    verification_token = secrets.token_hex(16)  # You can use a suitable hashing function
 
     return verification_token
+
 
 # Function to check if a user is verified
 async def is_verified_user(user_id):
@@ -100,7 +101,7 @@ async def start_command(client, message):
             await message.reply_text("You are verified for 24 hours.")
         else:
             # Generate a verification token
-            token = await get_verification_token(user_id)
+            token = await get_verification_token(user_id, expiration_time)
 
             # Calculate the expiration time
             expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
