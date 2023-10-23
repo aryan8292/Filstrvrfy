@@ -146,7 +146,7 @@ async def update_verification_token(user_id, new_token, new_expiration_time):
         collection = db.verification
 
         # Update the user's verification token and expiration time based on the user_id
-        collection.update_one(
+        result = await collection.update_one(
             {"user_id": user_id},
             {
                 "$set": {
@@ -158,7 +158,12 @@ async def update_verification_token(user_id, new_token, new_expiration_time):
 
         # Close the MongoDB connection
         client.close()
-        return True  # Return True to indicate a successful update
+
+        if result.modified_count == 1:
+            return True  # Return True to indicate a successful update
+        else:
+            return "User not found or not updated."
+
     except Exception as e:
         return str(e)  # Return the error message if an exception occurs
 
@@ -167,12 +172,13 @@ async def update_verification_token(user_id, new_token, new_expiration_time):
 user_id = "your_user_id"
 new_token = "your_new_token"
 new_expiration_time = datetime.now() + timedelta(hours=24)
-await update_verification_token(user_id, new_token, new_expiration_time)
+update_result = await update_verification_token(user_id, new_token, new_expiration_time)
 
 if update_result is True:
     print(f"Token updated for user with ID {user_id}.")
 else:
     print(f"Failed to update token: {update_result}")
+
 
 
 @Bot.on_message(filters.command('start') & filters.private)
