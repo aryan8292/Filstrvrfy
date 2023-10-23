@@ -93,19 +93,9 @@ async def mark_user_as_ad_seen(user_id):
     # Access the 'verification' collection (replace with your collection name)
     collection = db.verification
 
-    # Update the user document to mark them as having seen ads
-    collection.update_one({"user_id": user_id}, {"$set": {"ads_seen": True}})
+    # Update the user document to mark their "status_of_token" as "not active"
+    collection.update_one({"user_id": user_id, "status_of_token": "active"}, {"$set": {"status_of_token": "not active"}})
 
-async def mark_user_as_ad_seen(user_id):
-    # Connect to the MongoDB database
-    client = MongoClient(DB_URI)
-    db = client[DB_NAME]
-
-    # Access the 'verification' collection (replace with your collection name)
-    collection = db.verification
-
-    # Update the user document to mark them as having seen ads
-    collection.update_one({"user_id": user_id, "status_of_token": "active"}, {"$set": {"ads_seen": True}})
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client, message):
