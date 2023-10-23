@@ -113,41 +113,30 @@ async def start_command(client, message):
     user_id = message.from_user.id if message.from_user else None
 
     # Check if the user is already verified
-if VERIFY:
-    is_verified = await is_verified_user(user_id)
+    if VERIFY:
+        is_verified = await is_verified_user(user_id)
 
-    if is_verified:
-        # User is verified and active
-        await message.reply_text("You are verified for 24 hours.")
-    else:
-        # Generate a verification token if not verified
-        token = await get_verification_token(user_id)
+        if is_verified:
+            # User is verified and active
+            await message.reply_text("You are verified for 24 hours.")
+        else:
+            # Generate a verification token if not verified
+            token = await get_verification_token(user_id)
 
-        # Calculate the expiration time
-        expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
+            # Calculate the expiration time
+            expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
 
-        # Get the current date and time
-        current_time = datetime.now()
+            # Get the current date and time
+            current_time = datetime.now()
 
-        # Store the verification data in the MongoDB collection
-        verification_data = {
-            "user_id": user_id,
-            "token": token,
-            "expiration_time": expiration_time,
-            "timestamp": current_time,
-            "status_of_token": status_of_token,
-        }
-
-        # Insert the verification data into your MongoDB collection (verification_collection)
-        verification_collection.insert_one(verification_data)
-
-        # Generate a message with the verification token
-        text = (
-            f"Welcome, {message.from_user.mention}!\n\n"
-            "To access our services, please verify your identity.\n\n"
-            f"Your verification token: {token}\n\n"
-            f"Your verification is valid for {VERIFY_EXPIRATION_HOURS} hours."
-        )
+            # Store the verification data in the MongoDB collection
+            verification_data = {
+                "user_id": user_id,
+                "token": token,
+                "expiration_time": expiration_time,
+                "timestamp": current_time,
+                "status_of_token": status_of_token,
+            }
 
             # Generate a message with the verification token
             text = (
@@ -185,6 +174,7 @@ if VERIFY:
                     InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
                 ]])
             )
+
       
     if len(text) > 7:
         try:
