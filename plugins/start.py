@@ -107,27 +107,6 @@ async def mark_user_as_ad_seen(user_id):
     # Update the user document to mark their "status_of_token" as "not active"
     collection.update_one({"user_id": user_id, "status_of_token": "active"}, {"$set": {"status_of_token": "not active"}})
 
-from pymongo import MongoClient
-from datetime import datetime, timedelta
-
-# Define your MongoDB connection details
-DB_URI = "your_mongodb_uri"
-DB_NAME = "your_database_name"
-
-# Function to update the verification status to "active"
-from pymongo import MongoClient
-
-# Define your MongoDB connection details
-DB_URI = "your_mongodb_uri"
-DB_NAME = "your_database_name"
-
-# Function to update the verification status to "active"
-from pymongo import MongoClient
-
-# Define your MongoDB connection details
-DB_URI = "your_mongodb_uri"  # Replace with your MongoDB URI
-DB_NAME = "your_database_name"  # Replace with your database name
-
 def update_verification_status(user_id, status="active"):
     try:
         # Connect to the MongoDB database
