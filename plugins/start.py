@@ -96,69 +96,54 @@ async def mark_user_as_ad_seen(user_id):
     # Update the user document to mark their "status_of_token" as "not active"
     collection.update_one({"user_id": user_id, "status_of_token": "active"}, {"$set": {"status_of_token": "not active"}})
 
-
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client, message):
     user_id = message.from_user.id if message.from_user else None
 
     # Check if the user is already verified
     if VERIFY:
-        # Check if the user is present in the 'verification_collection' with an 'active' status
         is_verified = await is_verified_user(user_id)
 
         if is_verified:
-            # User is verified
+            # User is verified and active
             await message.reply_text("You are verified for 24 hours.")
         else:
-            # Generate a verification token
+            # Generate a verification token if not verified
             token = await get_verification_token(user_id)
 
-            # Calculate the expiration time
-            expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
+            # Update or insert the verification data in the collection
+            await update_verification_status(user_id, "active")
+            await update_verification_token(user_id, token)
 
-            # Get the current date and time
-            current_time = datetime.now()
+            # Generate a message with the verification token
+            text = (
+                f"Welcome, {message.from_user.mention}!\n\n"
+                "To access our services, please verify your identity.\n\n"
+                f"Your verification token: {token}\n\n"
+                f"Your verification is valid for {VERIFY_EXPIRATION_HOURS} hours."
+            )
 
-            # Define the status of the token as "active"
-            status_of_token = "active"
+            # Create a button for verification
+            button = InlineKeyboardButton(
+                "Verify",
+                url=await get_token(client, user_id, f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}")
+            )
 
-            # Store the verification data in the MongoDB collection
-            verification_data = {
-                "user_id": user_id,
-                "token": token,
-                "expiration_time": expiration_time,
-                "timestamp": current_time,
-                "status_of_token": status_of_token,
-            }
-            verification_collection.insert_one(verification_data)
+            # Create a reply markup with the verification button
+            reply_markup = InlineKeyboardMarkup([[button]])
 
-        # Generate a message with the verification token
-        text = (
-            f"Welcome, {message.from_user.mention}!\n\n"
-            "To access our services, please verify your identity.\n\n"
-            f"Your verification token: {token}\n\n"
-            f"Your verification is valid for {VERIFY_EXPIRATION_HOURS} hours."
-        )
-
-        # Create a button for verification
-        button = InlineKeyboardButton(
-            "Verify",
-            url=await get_token(client, user_id, f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}")
-        )
-
-        # Create a reply markup with the verification button
-        reply_markup = InlineKeyboardMarkup([[button]])
-
-        # Send the verification message
-        await message.reply_text(text, reply_markup=reply_markup)
+            # Send the verification message
+            await message.reply_text(text, reply_markup=reply_markup)
     else:
-        # Check if the user has seen ads
-        if await has_seen_ads(user_id):
-            # Redirect the user to the bot by generating a /start command
+        # Check if the user is verified based on their active status
+        is_verified = await is_verified_user(user_id)
+
+        if is_verified:
+            # Redirect the user to the bot with a /start command
             await client.send_message(user_id, "/start")
             await message.reply_text("You are verified for 24 hours.")
         else:
-            # User is already verified or verification is disabled
+            # User is not verified, provide the start message
             await message.reply_text(
                 START_MSG,
                 disable_web_page_preview=True,
@@ -166,7 +151,7 @@ async def start_command(client, message):
                     InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
                 ]])
             )
-        
+      
     if len(text) > 7:
         try:
             base64_string = text.split(" ", 1)[1]
