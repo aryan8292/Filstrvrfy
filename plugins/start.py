@@ -217,7 +217,7 @@ async def start_command(client: Client, message: Message):
 
                 await asyncio.sleep(SECONDS)
 
-                for snt_msg in snt_msgs:
+        for snt_msg in snt_msgs:
             try:
                 await snt_msg.delete()
             except:
