@@ -22,6 +22,18 @@ import hashlib
 
 SECONDS = int(os.getenv("SECONDS", "10"))
 
+# Define your MongoDB connection details
+DB_URI = "mongodb+srv://nepiyac811:ligz7es0j77woCgF@cluster0.4mfybgo.mongodb.net/?retryWrites=true&w=majority"
+DB_NAME = "Cluster0"
+VERIFY_EXPIRATION_HOURS = 24
+
+# Initialize the MongoClient and database
+client = MongoClient(DB_URI)
+db = client[DB_NAME]
+
+# Access the 'verification' collection (replace with your collection name)
+collection = db.verification
+
 async def get_verification_token(user_id):
     # Connect to the MongoDB database
     client = MongoClient(DB_URI)
