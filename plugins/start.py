@@ -150,9 +150,6 @@ async def start_command(client, message):
                 "status_of_token": "active",  # Set the status as "active" initially
             }
 
-            # Store the data in the verification collection
-            await update_verification_data(verification_data)
-
             # Generate a message with the verification token
             text = (
                 f"Welcome, {message.from_user.mention}!\n\n"
