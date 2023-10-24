@@ -44,19 +44,32 @@ async def check_token(bot, userid, token):
 
 VERIFIED = {}  # Initialize an empty dictionary to store user verification data
 
+from datetime import datetime, timedelta
+import pytz  # Import the pytz module
+
+VERIFIED = {}  # Initialize an empty dictionary to store user verification data
+
 async def verify_user(bot, userid, token, bot_username):
     user = await bot.get_users(userid)
 
+    # Get the current time
+    current_time = datetime.now()
+
     # Calculate the expiration time (24 hours from the current time)
     tz = pytz.timezone('Asia/Kolkata')
-    verification_time = datetime.now(tz)
+    verification_time = current_time.astimezone(tz)  # Make it timezone-aware
     expiration_time = verification_time + timedelta(hours=24)
+
+    # Format the verification and expiration times as strings
+    verification_time_str = verification_time.strftime("%Y-%m-%d %H:%M:%S")
+    expiration_time_str = expiration_time.strftime("%Y-%m-%d %H:M:%S")
 
     # Store the verification and expiration times in the VERIFIED dictionary along with user_id
     user_data = {
         "user_id": user.id,
-        "verification_time": verification_time,
-        "expiration_time": expiration_time,
+        "verification_time": verification_time_str,
+        "expiration_time": expiration_time_str,
+        "verification_status": "ACTIVE",  # Set verification status as ACTIVE
     }
     VERIFIED[user.id] = user_data
 
@@ -66,18 +79,24 @@ async def verify_user(bot, userid, token, bot_username):
 async def check_verification(bot, userid):
     user = await bot.get_users(userid)
 
-    # Get the timezone
-    tz = pytz.timezone('Asia/Kolkata')  # Adjust the timezone as needed
-
-    current_time = datetime.now(tz)  # Make current_time offset-aware
-
     if user.id in VERIFIED.keys():
         user_data = VERIFIED[user.id]
-        expiration_time = user_data.get("expiration_time")
+        expiration_time_str = user_data.get("expiration_time")
+
+        # Parse the expiration time string back to a datetime object
+        expiration_time = datetime.strptime(expiration_time_str, "%Y-%m-%d %H:%M:%S")
+
+        # Get the current time and make it timezone-aware
+        tz = pytz.timezone('Asia/Kolkata')  # Adjust the timezone as needed
+        current_time = datetime.now(tz)
 
         if current_time < expiration_time:
+            # Update verification status as ACTIVE
+            user_data["verification_status"] = "ACTIVE"
             return user_data  # Return the verification data
         else:
+            # Update verification status as DEACTIVATED
+            user_data["verification_status"] = "DEACTIVATED"
             return False  # Verification has expired
     else:
         return False  # User is not verified
