@@ -4,76 +4,53 @@ import random
 import pytz
 from datetime import date, datetime, timedelta
 import requests as re
+from pymongo import MongoClient
 
-SHORTNER = os.environ.get("SHORTENER_SITE")
-API = os.environ.get("SHORTENER_API")
+# Constants
+DB_URI = os.environ.get("DATABASE_URL")
+DB_NAME = os.environ.get("DATABASE_NAME")
+VERIFY_EXPIRATION_HOURS = 24
 
-async def get_shortlink(link):
-    res = re.get(f'https://{SHORTNER}/api?api={API}&url={link}')
-    res.raise_for_status()
-    data = res.json()
-    return data.get('shortenedUrl')
+async def verify_user(user_id, token):
+    try:
+        # Connect to the MongoDB database
+        client = MongoClient(DB_URI)
+        db = client[DB_NAME]
 
-async def generate_random_string(num: int):
-    characters = string.ascii_letters + string.digits
-    random_string = ''.join(random.choice(characters) for _ in range(num))
-    return random_string
+        # Access the 'verification_collection' (replace with your collection name)
+        collection = db.verification_collection
 
-TOKENS = {}
-VERIFIED = {}
+        # Find the user's verification data in the collection
+        user_data = collection.find_one({"user_id": user_id, "token": token, "status_of_token": "ACTIVE"})
 
-async def check_token(bot, userid, token):
-    user = await bot.get_users(userid)
-    if user.id in TOKENS.keys():
-        TKN = TOKENS[user.id]
-        if token in TKN.keys():
-            is_used = TKN[token]
-            if is_used:
-                return False
-            else:
-                return True
-    else:
+        if user_data:
+            # Calculate the expiration time (24 hours from the current time)
+            tz = pytz.timezone('Asia/Kolkata')
+            expiration_time = datetime.now(tz) + timedelta(hours=VERIFY_EXPIRATION_HOURS)
+
+            # Update the expiration time for the verified user
+            collection.update_one(
+                {"user_id": user_id, "token": token},
+                {"$set": {"expiration_time": expiration_time}}
+            )
+
+            # Close the MongoDB connection
+            client.close()
+
+            # User is verified
+            return True
+    except Exception as e:
+        # Handle any exceptions (e.g., MongoDB connection issues)
         return False
 
-async def get_token(bot, userid, link):
-    user = await bot.get_users(userid)
-    token = await generate_random_string(7)
-    TOKENS[user.id] = {token: False}
-    link = f"{link}verify-{user.id}-{token}"
-    shortened_verify_url = await get_shortlink(link)
-    return str(shortened_verify_url)
-
-async def verify_user(bot, userid, token):
-    user = await bot.get_users(userid)
-    
-    # Calculate the expiration time (24 hours from the current time)
-    tz = pytz.timezone('Asia/Kolkata')
-    expiration_time = datetime.now(tz) + timedelta(hours=24)
-    
-    # Store the expiration time in the VERIFIED dictionary
-    VERIFIED[user.id] = expiration_time
-
-    # Return the Telegram bot URL
-    return await generate_telegram_bot_url(bot_username)
-
-async def check_verification(bot, userid):
-    user = await bot.get_users(userid)
-    current_time = datetime.now()
-
-    if user.id in VERIFIED.keys():
-        expiration_time = VERIFIED[user.id]
-
-        if current_time < expiration_time:
-            return True  # User is verified
-        else:
-            return False  # Verification has expired
-    else:
-        return False  # User is not verified
-
-async def generate_telegram_bot_url(username):
-    return f'tg://resolve?domain={username}&start=verified'
-
 if __name__ == "__main__":
-    # Replace 'bot_username' with your actual bot's username
-    bot_username = "@FileXTera_bot"
-    print("Bot URL:", generate_telegram_bot_url(bot_username))
+    # Replace 'your_user_id' and 'your_token' with actual user ID and token
+    user_id = "your_user_id"
+    token = "your_token"
+
+    is_verified = verify_user(user_id, token)
+
+    if is_verified:
+        print("User is verified.")
+    else:
+        print("User is not verified.")
