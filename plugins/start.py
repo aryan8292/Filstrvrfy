@@ -81,9 +81,8 @@ async def get_verification_token(user_id):
         return verification_token
 
 async def get_token(client, user_id, token):
-    # Generate the URL with user_id and token
-    url = f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}"
-    return url
+    token = await get_verification_token(user_id)  # Call get_verification_token to retrieve the token
+    return token
 
 async def is_verified_user(user_id):
     # Connect to the MongoDB database
