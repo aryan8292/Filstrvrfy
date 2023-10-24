@@ -51,7 +51,7 @@ async def start_or_verify_command(client: Client, message: Message):
     # User is not verified or their verification has expired, provide them with a token
     token = await get_token(client, user_id, "https://example.com/") # Replace with your link
     message = "You are verified for 24 hours"  # Add your message here
-    link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}&message=start"
+    link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
 
     # Shorten the verification link using the get_shortlink function
     shortened_link = await get_shortlink(link)
