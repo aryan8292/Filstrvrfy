@@ -43,8 +43,6 @@ async def get_token(bot, userid, link):
     shortened_verify_url = await get_shortlink(link)
     return str(shortened_verify_url)
 
-import pytz  # Import the pytz module
-
 VERIFIED = {}  # Initialize an empty dictionary to store user verification data
 
 async def verify_user(bot, userid, token, bot_username):
