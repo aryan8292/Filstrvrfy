@@ -57,7 +57,9 @@ async def start_or_verify_command(client: Client, message: Message):
         token = await get_token(client, user_id, "https://example.com/")  # Replace with your link
 
         # Verify user and set verification status in the 'VERIFIED' dictionary
-        verification_success = await verify_user(client, user_id, token)
+        bot_username = "@FileXTera_bot"  # Replace with your bot's username
+        verification_success = await verify_user(client, user_id, token, bot_username)
+
 
         if verification_success:
             reply_markup = InlineKeyboardMarkup(
