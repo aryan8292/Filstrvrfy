@@ -142,8 +142,10 @@ async def start_command(client, message):
                 await snt_msg.delete()
             except:
                 pass
+
+    return
+
         
-        return
     
     
 #=====================================================================================##
