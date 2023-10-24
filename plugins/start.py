@@ -19,8 +19,8 @@ from verify import TOKENS, VERIFIED, check_token, get_token, verify_user, check_
 SECONDS = int(os.getenv("SECONDS", "10")) #add time im seconds for waitingwaiting before delete
 
 
-@Bot.on_message(filters.command(['start', 'verify']) & filters.private)
-async def start_or_verify_command(client: Client, message: Message):
+@Bot.on_message(filters.command('start') & filters.private)
+async def start(client: Client, message: Message):
     user_id = message.from_user.id
     text = message.text  # Define the 'text' variable here
 
