@@ -88,37 +88,14 @@ async def get_token(client, user_id, url):
 
 # Define your shortening service API and API key
 SHORTENER_API = "4e5ad4ad0887416c80a30df41097dd96004b1f19"
-API_KEY = "24316517"
+API_ID = "24316517"
 
 # Define an async function to get the shortened URL
-async def get_shortened_url(long_url):
-    try:
-        # Construct the request URL with the provided API and API key
-        request_url = f"{SHORTENER_API}?api={API_KEY}&url={long_url}"
-
-        # Send a GET request to the shortening service
-        response = requests.get(request_url)
-
-        if response.status_code == 200:
-            # Parse the response JSON and extract the shortened URL
-            data = response.json()
-            shortened_url = data.get("shortenedUrl")
-            return shortened_url
-        else:
-            return None  # Shortening failed
-
-    except Exception as e:
-        return None  # An error occurred during shortening
-
-# Define an async function to use the get_shortened_url function
-async def main():
-    long_url = "https://example.com"
-    shortened_url = await get_shortened_url(long_url)
-
-    if shortened_url:
-        print(f"Shortened URL: {shortened_url}")
-    else:
-        print("URL shortening failed.")
+async def get_shortened_url(link, shortener_api, api_id):
+    res = re.get(f'https://{shortener_api}/api?api={api_id}&url={link}')
+    res.raise_for_status()
+    data = res.json()
+    return data.get('shortenedUrl')
 
 # Run the main function if the script is executed
 if __name__ == "__main__":
@@ -201,7 +178,7 @@ async def start_command(client, message):
 
             # Create a button for verification
             verification_url = f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}"
-            shortened_url = await get_shortened_url(verification_url, SHORTENER_API, API_KEY)
+            shortened_url = await get_shortened_url(verification_url, SHORTENER_API, API_ID)
 
             button = InlineKeyboardButton(
                 "Verify",
