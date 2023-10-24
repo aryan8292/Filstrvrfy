@@ -22,6 +22,7 @@ SECONDS = int(os.getenv("SECONDS", "10")) #add time im seconds for waitingwaitin
 @Bot.on_message(filters.command(['start', 'verify']) & filters.private)
 async def start_or_verify_command(client: Client, message: Message):
     user_id = message.from_user.id
+    text = message.text  # Define the 'text' variable here
 
     # Check if the user is already verified and their verification is still valid (within 24 hours)
     if await check_verification(client, user_id):
