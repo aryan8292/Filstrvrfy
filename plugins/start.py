@@ -28,6 +28,9 @@ async def start_command(client, message):
     text = message.text
 
     # Check if the user is already verified and their verification is still valid (within 24 hours)
+    await asyncio.sleep(5)  # Add a 5-second time gap before checking the verification status
+
+    # Check if the user is already verified and their verification is still valid (within 24 hours)
     if await check_verification(client, user_id):
         # User is already verified, respond with a message indicating verification status
         await message.reply_text("You are successfully verified for 24 hours. You can use the bot.")
