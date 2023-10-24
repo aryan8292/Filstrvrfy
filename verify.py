@@ -43,6 +43,10 @@ async def get_token(bot, userid, link):
     shortened_verify_url = await get_shortlink(link)
     return str(shortened_verify_url)
 
+import pytz  # Import the pytz module
+
+VERIFIED = {}  # Initialize an empty dictionary to store user verification data
+
 async def verify_user(bot, userid, token, bot_username):
     user = await bot.get_users(userid)
 
@@ -51,15 +55,16 @@ async def verify_user(bot, userid, token, bot_username):
     verification_time = datetime.now(tz)
     expiration_time = verification_time + timedelta(hours=24)
 
-    # Store the verification and expiration times in the VERIFIED dictionary
-    VERIFIED[user.id] = {
+    # Store the verification and expiration times in the VERIFIED dictionary along with user_id
+    user_data = {
+        "user_id": user.id,
         "verification_time": verification_time,
-        "expiration_time": expiration_time
+        "expiration_time": expiration_time,
     }
+    VERIFIED[user.id] = user_data
 
     # Return the Telegram bot URL
     return await generate_telegram_bot_url(bot_username)
-
 
 async def check_verification(bot, userid):
     user = await bot.get_users(userid)
@@ -70,11 +75,11 @@ async def check_verification(bot, userid):
     current_time = datetime.now(tz)  # Make current_time offset-aware
 
     if user.id in VERIFIED.keys():
-        verification_data = VERIFIED[user.id]
-        expiration_time = verification_data.get("expiration_time")
+        user_data = VERIFIED[user.id]
+        expiration_time = user_data.get("expiration_time")
 
         if current_time < expiration_time:
-            return verification_data  # Return the verification data
+            return user_data  # Return the verification data
         else:
             return False  # Verification has expired
     else:
