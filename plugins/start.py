@@ -28,7 +28,7 @@ async def start_command(client, message):
     text = message.text
 
     # Check if the user is already verified and their verification is still valid (within 24 hours)
-    await asyncio.sleep(2)  # Replace SECONDS with the number of seconds you want to wait
+    await asyncio.sleep(0.5)  # Replace SECONDS with the number of seconds you want to wait
 
     if await check_verification(client, user_id):
         # User is already verified, no need to send verification message
@@ -46,7 +46,7 @@ async def start_command(client, message):
             user_data = {
                 "user_id": user_id,
                 "verification_time": datetime.now(),
-                "expiration_time": datetime.now() + timedelta(hours=24),
+                "expiration_time": datetime now() + timedelta(hours=24),
                 "status": "ACTIVE"  # Verification status
             }
             VERIFIED[user_id] = user_data
@@ -66,6 +66,7 @@ async def start_command(client, message):
                 reply_markup=reply_markup,
                 quote=True
             )
+
 
     # Handle the rest of your code (e.g., sending files)
     if len(text) > 7:
