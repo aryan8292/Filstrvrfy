@@ -158,7 +158,7 @@ async def start_command(client, message):
             # Create a button for verification
             button = InlineKeyboardButton(
                 "Verify",
-                url=await get_token(client, user_id, f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}")
+                url=await get_verification_token(client, user_id, f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}")
             )
 
             # Create a reply markup with the verification button
