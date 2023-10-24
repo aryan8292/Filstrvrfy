@@ -40,7 +40,7 @@ if await check_verification(client, user_id):
         await message.reply_text("You are successfully verified for 24 hours. You can use the bot.")
 else:
     # User is not verified or their verification has expired, provide them with a token
-    token = await get_token(client, user_id, "https://t.me/{client.username}?start=verify-{user_id}-{token}")
+    token = await get_token(client, user_id, "https://t.me/{client.username}?start=verify-{user_id}-{token")
     link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
 
     # Verify user and set verification status in the 'VERIFIED' dictionary
@@ -61,7 +61,7 @@ else:
             await message.reply_text("You are successfully verified for 24 hours. You can use the bot.")
     else:
         # Verification failed, provide a token and verification link
-        link = f"https://t.me/{client.username}?start=verify-{user_id-{token}"
+        link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
         reply_markup = InlineKeyboardMarkup(
             [InlineKeyboardButton("Verify Now", url=link)]
         )
