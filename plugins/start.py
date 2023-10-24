@@ -50,7 +50,7 @@ else:
             await message.reply_text("You are successfully verified for 24 hours. You can use the bot.")
     else:
         # Verification failed, provide a token and verification link
-        link = f"https://t.me/{client.username}?start=verify-{user_id-{token}"
+        link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
         reply_markup = InlineKeyboardMarkup(
             [InlineKeyboardButton("Verify Now", url=link)]
         )
