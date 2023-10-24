@@ -45,18 +45,20 @@ async def get_token(bot, userid, link):
 
 async def verify_user(bot, userid, token, bot_username):
     user = await bot.get_users(userid)
-    
+
     # Calculate the expiration time (24 hours from the current time)
     tz = pytz.timezone('Asia/Kolkata')
     expiration_time = datetime.now(tz) + timedelta(hours=24)
-    
-    # Store the expiration time in the VERIFIED dictionary
-    VERIFIED[user.id] = expiration_time
+
+    # Store the verification and expiration times in the VERIFIED dictionary
+    VERIFIED[user.id] = {
+        "verification_time": datetime.now(tz),
+        "expiration_time": expiration_time
+    }
 
     # Return the Telegram bot URL
     return await generate_telegram_bot_url(bot_username)
 
-import pytz  # Import the pytz library
 
 async def check_verification(bot, userid):
     user = await bot.get_users(userid)
