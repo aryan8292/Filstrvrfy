@@ -80,6 +80,9 @@ async def get_verification_token(user_id):
 
         return verification_token
 
+async def get_token(client, user_id):
+    token = await get_verification_token(user_id)  # Call get_verification_token to retrieve the token
+    return token
 
 async def is_verified_user(user_id):
     # Connect to the MongoDB database
@@ -158,7 +161,7 @@ async def start_command(client, message):
             # Create a button for verification
             button = InlineKeyboardButton(
                 "Verify",
-                url=await get_verification_token(client, user_id, f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}")
+                url=await get_token(client, user_id, f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}")
             )
 
             # Create a reply markup with the verification button
