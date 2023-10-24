@@ -20,7 +20,18 @@ async def generate_random_string(num: int):
     return random_string
 
 TOKENS = {}
+
 VERIFIED = {}  # Initialize an empty dictionary to store user verification data
+# Example data structure for a verified user
+user_data = {
+    "user_id": 12345,  # Replace with the user's actual ID
+    "verification_time": datetime.now(),
+    "expiration_time": datetime.now() + timedelta(hours=24),
+    "status": "ACTIVE"
+}
+
+# Add the user data to the VERIFIED dictionary
+VERIFIED[user_data["user_id"]] = user_data
 
 async def get_token(bot, userid, link):
     user = await bot.get_users(userid)
