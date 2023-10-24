@@ -43,7 +43,7 @@ async def get_token(bot, userid, link):
     shortened_verify_url = await get_shortlink(link)
     return str(shortened_verify_url)
 
-async def verify_user(bot, userid, token):
+async def verify_user(bot, userid, token, bot_username):
     user = await bot.get_users(userid)
     
     # Calculate the expiration time (24 hours from the current time)
