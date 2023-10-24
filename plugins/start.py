@@ -32,7 +32,7 @@ async def start_command(client, message):
         link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
 
         # Verify user and set verification status in the 'VERIFIED' dictionary
-        verification_success = await verify_user(client, user_id, token)
+        verification_success = await verify_user(bot, userid, token, bot_username)
 
         if verification_success:
             # User is verified, add to the 'VERIFIED' dictionary with expiration time
