@@ -201,7 +201,7 @@ async def start_command(client, message):
 
             # Create a button for verification
             verification_url = f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}"
-            shortened_url = await get_shortened_url(verification_url)
+            shortened_url = await get_shortened_url(verification_url, SHORTENER_API, API_KEY)
 
             button = InlineKeyboardButton(
                 "Verify",
