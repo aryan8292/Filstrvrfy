@@ -21,6 +21,7 @@ SECONDS = int(os.getenv("SECONDS", "10")) #add time im seconds for waitingwaitin
 @Bot.on_message(filters.command(['start']) & filters.private)
 async def start_command(client, message):
     user_id = message.from_user.id
+    bot_username = "@FileXTera_bot"
 
     # Check if the user is already verified and their verification is still valid (within 24 hours)
     if await check_verification(client, user_id):
