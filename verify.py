@@ -75,5 +75,5 @@ async def generate_telegram_bot_url(username):
 
 if __name__ == "__main__":
     # Replace 'bot_username' with your actual bot's username
-    bot_username = "@YourFileBot"
+    bot_username = "@FileXTera_bot"
     print("Bot URL:", generate_telegram_bot_url(bot_username))
