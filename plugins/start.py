@@ -53,7 +53,7 @@ async def start_command(client, message):
 
             # Send a verification message
             verification_message = await message.reply_text("You are successfully verified for 24 hours. You can use the bot.")
-            await asyncio.sleep(SECONDS)  # Add a delay for SECONDS
+            await asyncio.sleep(1)  # Add a delay for SECONDS
             await verification_message.delete()
         else:
             # Verification failed, provide a token and verification link
