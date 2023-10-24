@@ -2,108 +2,226 @@ import os
 import string
 import random
 import pytz
-from datetime import date, datetime, timedelta
-import requests as re
+from pyrogram.errors import InputUserDeactivated, UserNotParticipant, FloodWait, UserIsBlocked, PeerIdInvalid, ChatAdminRequired
+import asyncio
+from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram import enums
+from typing import Union
+from Script import script
+import random 
+import re
+from datetime import datetime, timedelta, date, time
+from typing import List
+from database.users_chats_db import db
+import requests
+import aiohttp
 
 SHORTNER = os.environ.get("SHORTENER_SITE")
 API = os.environ.get("SHORTENER_API")
 
-async def get_shortlink(link):
-    res = re.get(f'https://{SHORTNER}/api?api={API}&url={link}')
-    res.raise_for_status()
-    data = res.json()
-    return data.get('shortenedUrl')
+async def get_shortlink(chat_id, link):
+    settings = await get_settings(chat_id) #fetching settings for group
+    if 'shortlink' in settings.keys():
+        URL = settings['shortlink']
+    else:
+        URL = SHORTLINK_URL
+    if 'shortlink_api' in settings.keys():
+        API = settings['shortlink_api']
+    else:
+        API = SHORTLINK_API
+    https = link.split(":")[0] #splitting https or http from link
+    if "http" == https: #if https == "http":
+        https = "https"
+        link = link.replace("http", https) #replacing http to https
+    if URL == "api.shareus.in":
+        url = f'https://{URL}/shortLink'
+        params = {
+            "token": API,
+            "format": "json",
+            "link": link,
+        }
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, params=params, raise_for_status=True, ssl=False) as response:
+                    data = await response.json(content_type="text/html")
+                    if data["status"] == "success":
+                        return data["shortlink"]
+                    else:
+                        logger.error(f"Error: {data['message']}")
+                        return f'https://{URL}/shortLink?token={API}&format=json&link={link}'
+        except Exception as e:
+            logger.error(e)
+            return f'https://{URL}/shortLink?token={API}&format=json&link={link}'
+    else:
+        url = f'https://{URL}/api'
+        params = {
+            "api": API,
+            "url": link,
+        }
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, params=params, raise_for_status=True, ssl=False) as response:
+                    data = await response.json()
+                    if data["status"] == "success":
+                        return data["shortenedUrl"]
+                    else:
+                        logger.error(f"Error: {data['message']}")
+                        if URL == 'clicksfly.com':
+                            return f'https://{URL}/api?api={API}&url={link}'
+                        else:
+                            return f'https://{URL}/api?api={API}&link={link}'
+        except Exception as e:
+            logger.error(e)
+            if URL == 'clicksfly.com':
+                return f'https://{URL}/api?api={API}&url={link}'
+            else:
+                return f'https://{URL}/api?api={API}&link={link}'
 
-async def generate_random_string(num: int):
-    characters = string.ascii_letters + string.digits
-    random_string = ''.join(random.choice(characters) for _ in range(num))
-    return random_string
+async def get_verify_shorted_link(num, link):
+    if int(num) == 1:
+        API = SHORTLINK_API
+        URL = SHORTLINK_URL
+    else:
+        API = VERIFY2_API
+        URL = VERIFY2_URL
+    https = link.split(":")[0]
+    if "http" == https:
+        https = "https"
+        link = link.replace("http", https)
 
-TOKENS = {}
+    if URL == "api.shareus.in":
+        url = f"https://{URL}/shortLink"
+        params = {"token": API,
+                  "format": "json",
+                  "link": link,
+                  }
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, params=params, raise_for_status=True, ssl=False) as response:
+                    data = await response.json(content_type="text/html")
+                    if data["status"] == "success":
+                        return data["shortlink"]
+                    else:
+                        logger.error(f"Error: {data['message']}")
+                        return f'https://{URL}/shortLink?token={API}&format=json&link={link}'
 
-VERIFIED = {}  # Initialize an empty dictionary to store user verification data
-# Example data structure for a verified user
-user_data = {
-    "user_id": 12345,  # Replace with the user's actual ID
-    "verification_time": datetime.now(),
-    "expiration_time": datetime.now() + timedelta(hours=24),
-    "status": "ACTIVE"
-}
+        except Exception as e:
+            logger.error(e)
+            return f'https://{URL}/shortLink?token={API}&format=json&link={link}'
+    else:
+        url = f'https://{URL}/api'
+        params = {'api': API,
+                  'url': link,
+                  }
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, params=params, raise_for_status=True, ssl=False) as response:
+                    data = await response.json()
+                    if data["status"] == "success":
+                        return data["shortenedUrl"]
+                    else:
+                        logger.error(f"Error: {data['message']}")
+                        if URL == 'clicksfly.com':
+                            return f'https://{URL}/api?api={API}&url={link}'
+                        else:
+                            return f'https://{URL}/api?api={API}&link={link}'
+        except Exception as e:
+            logger.error(e)
+            if URL == 'clicksfly.com':
+                return f'https://{URL}/api?api={API}&url={link}'
+            else:
+                return f'https://{URL}/api?api={API}&link={link}'
+                
 
-# Add the user data to the VERIFIED dictionary
-VERIFIED[user_data["user_id"]] = user_data
-
-async def get_token(bot, userid, link):
+async def get_token(bot, userid, link, fileid):
     user = await bot.get_users(userid)
-    token = await generate_random_string(7)
+    if not await db.is_user_exist(user.id):
+        await db.add_user(user.id, user.first_name)
+        await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(user.id, user.mention))
+    token = ''.join(random.choices(string.ascii_letters + string.digits, k=7))
     TOKENS[user.id] = {token: False}
-    link = f"{link}verify-{user.id}-{token}"
-    shortened_verify_url = await get_shortlink(link)
+    url = f"{link}verify-{user.id}-{token}-{fileid}"
+    status = await get_verify_status(user.id)
+    date_var = status["date"]
+    time_var = status["time"]
+    hour, minute, second = time_var.split(":")
+    year, month, day = date_var.split("-")
+    last_date, last_time = str((datetime(year=int(year), month=int(month), day=int(day), hour=int(hour), minute=int(minute), second=int(second)))-timedelta(hours=12)).split(" ")
+    tz = pytz.timezone('Asia/Kolkata')
+    curr_date, curr_time = str(datetime.now(tz)).split(" ")
+    if last_date == curr_date:
+        vr_num = 2
+    else:
+        vr_num = 1
+    shortened_verify_url = await get_verify_shorted_link(vr_num, url)
     return str(shortened_verify_url)
     
 async def check_token(bot, userid, token):
     user = await bot.get_users(userid)
+    if not await db.is_user_exist(user.id):
+        await db.add_user(user.id, user.first_name)
+        await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(user.id, user.mention))
     if user.id in TOKENS.keys():
         TKN = TOKENS[user.id]
         if token in TKN.keys():
             is_used = TKN[token]
-            if is_used:
+            if is_used == True:
                 return False
             else:
                 return True
     else:
         return False
 
-
-async def verify_user(bot, userid, token, bot_username):
-    user = await bot.get_users(userid)
-
-    # Get the current time
-    current_time = datetime.now()
-
-    # Calculate the expiration time (24 hours from the current time)
+async def get_verify_status(userid):
+    status = temp.VERIFY.get(userid)
+    if not status:
+        status = await db.get_verified(userid)
+        temp.VERIFY[userid] = status
+    return status
+async def update_verify_status(userid, date_temp, time_temp):
+    status = await get_verify_status(userid)
+    status["date"] = date_temp
+    status["time"] = time_temp
+    temp.VERIFY[userid] = status
+    await db.update_verification(userid, date_temp, time_temp)
+    
+async def verify_user(bot, userid, token):
+    user = await bot.get_users(int(userid))
+    if not await db.is_user_exist(user.id):
+        await db.add_user(user.id, user.first_name)
+        await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(user.id, user.mention))
+    TOKENS[user.id] = {token: True}
     tz = pytz.timezone('Asia/Kolkata')
-    verification_time = current_time.astimezone(tz)  # Make it timezone-aware
-    expiration_time = verification_time + timedelta(hours=24)
-
-    # Store the verification and expiration times in the VERIFIED dictionary along with user_id
-    user_data = {
-        "user_id": user.id,
-        "verification_time": verification_time,
-        "expiration_time": expiration_time,
-        "verification_status": "ACTIVE",  # Set verification status as ACTIVE
-    }
-    VERIFIED[user.id] = user_data
-
-    # Return the Telegram bot URL
-    return await generate_telegram_bot_url(bot_username)
-
+    date_var = datetime.now(tz)+timedelta(hours=12)
+    temp_time = date_var.strftime("%H:%M:%S")
+    date_var, time_var = str(date_var).split(" ")
+    await update_verify_status(user.id, date_var, temp_time)
+    
 async def check_verification(bot, userid):
-    user = await bot.get_users(userid)
-
-    if user.id in VERIFIED.keys():
-        user_data = VERIFIED[user.id]
-        expiration_time = user_data.get("expiration_time")
-
-        # Make current_time offset-aware with the same timezone as expiration_time
-        current_time = datetime.now(expiration_time.tzinfo)
-
-        if current_time < expiration_time:
-            # Update verification status as ACTIVE
-            user_data["verification_status"] = "ACTIVE"
-            return user_data  # Return the verification data
-        else:
-            # Update verification status as DEACTIVATED
-            user_data["verification_status"] = "DEACTIVATED"
-            return False  # Verification has expired
+    user = await bot.get_users(int(userid))
+    if not await db.is_user_exist(user.id):
+        await db.add_user(user.id, user.first_name)
+        await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(user.id, user.mention))
+    tz = pytz.timezone('Asia/Kolkata')
+    today = date.today()
+    now = datetime.now(tz)
+    curr_time = now.strftime("%H:%M:%S")
+    hour1, minute1, second1 = curr_time.split(":")
+    curr_time = time(int(hour1), int(minute1), int(second1))
+    status = await get_verify_status(user.id)
+    date_var = status["date"]
+    time_var = status["time"]
+    years, month, day = date_var.split('-')
+    comp_date = date(int(years), int(month), int(day))
+    hour, minute, second = time_var.split(":")
+    comp_time = time(int(hour), int(minute), int(second))
+    if comp_date<today:
+        return False
     else:
-        return False  # User is not verified
+        if comp_date == today:
+            if comp_time<curr_time:
+                return False
+            else:
+    
+            
 
-
-async def generate_telegram_bot_url(bot_username):
-    return f'tg://resolve?domain={bot_username}&start=verified'
-
-if __name__ == "__main__":
-    # Replace 'bot_username' with your actual bot's username
-    bot_username = "@FileXTera_bot"
-    print("Bot URL:", generate_telegram_bot_url(bot_username))
