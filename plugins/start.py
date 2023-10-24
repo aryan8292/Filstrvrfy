@@ -24,9 +24,14 @@ async def start_or_verify_command(client: Client, message: Message):
     user_id = message.from_user.id
     text = message.text  # Define the 'text' variable here
 
-    # Check if the user is already verified and their verification is still valid (within 24 hours)
+    if not await present_user(user_id):
+        try:
+            await add_user(user_id)
+        except:
+            pass
+
     if await check_verification(client, user_id):
-        # User is already verified and their verification is still valid, they can use the bot
+        # User is already verified, send the second message
         reply_markup = InlineKeyboardMarkup(
             [
                 [
@@ -47,25 +52,20 @@ async def start_or_verify_command(client: Client, message: Message):
             disable_web_page_preview=True,
             quote=True
         )
-        return
+    else:
+        # User is not verified or their verification has expired, provide them with a token
+        token = await get_token(client, user_id, "https://example.com/") # Replace with your link
+        link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
+        
+        # Create a button for verification
+        button = InlineKeyboardButton(
+            "Verify Now",
+            url=await get_token(client, user_id, f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}")
+        )
+        reply_markup = InlineKeyboardMarkup([[button]])
+        
+        await message.reply(verification_message, reply_markup=reply_markup)
 
-    # User is not verified or their verification has expired, provide them with a token
-    token = await get_token(client, user_id, "https://example.com/") # Replace with your link
-    link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
-
-    # Shorten the verification link using the get_shortlink function
-    shortened_link = await get_shortlink(link)
-
-    reply_markup = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("Verify Now", url=shortened_link)]
-        ]
-    )
-    await message.reply_text(
-        f"Here is your verification token: {token}\nClick the 'Verify Now' button below to start the verification process.",
-        reply_markup=reply_markup,
-        quote=True
-    )
 
 
     if len(text)>7:
