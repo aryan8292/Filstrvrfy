@@ -35,7 +35,7 @@ async def start_command(client, message):
         pass
     else:
         # User is not verified or their verification has expired, provide them with a token
-        token = await get_token(client, user_id, f"https://t.me/{client.username}?start=verify-{user_id}-{token}")
+        token = await get_token(client, user_id, "https://example.com/") # Replace with your link
         link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
 
         # Verify user and set verification status in the 'VERIFIED' dictionary
