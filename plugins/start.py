@@ -54,22 +54,46 @@ async def start_or_verify_command(client: Client, message: Message):
         )
     else:
         # User is not verified or their verification has expired, provide them with a token
-        token = await get_token(client, user_id, "https://example.com/") # Replace with your link
-        link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
-        
-        # Create a button for verification
-        button = InlineKeyboardButton(
-            "Verify Now",
-            url=await get_token(client, user_id, f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}")
-        )
-        reply_markup = InlineKeyboardMarkup([[button]])
-        
-        await message.reply_text(
-        f"Here is your verification token: {token}\nClick the 'Verify Now' button below to start the verification process.",
-        reply_markup=reply_markup,
-        quote=True
-    )
+        token = await get_token(client, user_id, "https://example.com/")  # Replace with your link
 
+        # Verify user and set verification status in the 'VERIFIED' dictionary
+        verification_success = await verify_user(client, user_id, token)
+
+        if verification_success:
+            reply_markup = InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton("😊 About Me", callback_data="about"),
+                        InlineKeyboardButton("🔒 Close", callback_data="close")
+                    ]
+                ]
+            )
+            await message.reply_text(
+                text=START_MSG.format(
+                    first=message.from_user.first_name,
+                    last=message.from_user.last_name,
+                    username=None if not message.from_user.username else '@' + message.from_user.username,
+                    mention=message.from_user.mention,
+                    id=message.from_user.id
+                ),
+                reply_markup=reply_markup,
+                disable_web_page_preview=True,
+                quote=True
+            )
+        else:
+            link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
+            # Create a button for verification
+            button = InlineKeyboardButton(
+                "Verify Now",
+                url=link
+            )
+            reply_markup = InlineKeyboardMarkup([[button]])
+
+            await message.reply_text(
+                f"Here is your verification token: {token}\nClick the 'Verify Now' button below to start the verification process.",
+                reply_markup=reply_markup,
+                quote=True
+            )
 
 
     if len(text)>7:
