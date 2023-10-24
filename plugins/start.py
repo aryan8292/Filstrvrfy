@@ -132,8 +132,8 @@ async def start_command(client, message):
             # Generate a verification token if not verified
             token = await get_verification_token(user_id)
 
-            # Calculate the expiration time
-            expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
+            # Calculate the expiration time (24 hours from now)
+            expiration_time = datetime.now() + timedelta(hours=24)
 
             # Get the current date and time
             current_time = datetime.now()
@@ -144,7 +144,7 @@ async def start_command(client, message):
                 "token": token,
                 "expiration_time": expiration_time,
                 "timestamp": current_time,
-                "status_of_token": status_of_token,
+                "status_of_token": "active",
             }
 
             # Generate a message with the verification token
@@ -152,7 +152,7 @@ async def start_command(client, message):
                 f"Welcome, {message.from_user.mention}!\n\n"
                 "To access our services, please verify your identity.\n\n"
                 f"Your verification token: {token}\n\n"
-                f"Your verification is valid for {VERIFY_EXPIRATION_HOURS} hours."
+                f"Your verification is valid for 24 hours."
             )
 
             # Create a button for verification
@@ -167,12 +167,11 @@ async def start_command(client, message):
             # Send the verification message
             await message.reply_text(text, reply_markup=reply_markup)
     else:
-        # Check if the user is verified based on their active status
-        is_verified = await is_verified_user(user_id)
+        # Check if the user is verified based on the status of their token
+        verification_data = await get_verification_data(user_id)
 
-        if is_verified:
-            # Redirect the user to the bot with a /start command
-            await client.send_message(user_id, "/start")
+        if verification_data and verification_data["status_of_token"] == "active":
+            # User's token is still active
             await message.reply_text("You are verified for 24 hours.")
         else:
             # User is not verified, provide the start message
@@ -183,6 +182,7 @@ async def start_command(client, message):
                     InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
                 ]])
             )
+
 
       
     if len(text) > 7:
