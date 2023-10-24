@@ -31,7 +31,7 @@ async def start_command(client, message):
     await asyncio.sleep(2)  # Replace SECONDS with the number of seconds you want to wait
 
     if await check_verification(client, user_id):
-        # User is already verified, no need to send a message
+        # User is already verified, no need to send verification message
         pass
     else:
         # User is not verified or their verification has expired, provide them with a token
