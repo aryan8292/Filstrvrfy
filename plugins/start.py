@@ -186,38 +186,47 @@ async def start_command(client, message):
 
       
     if len(text) > 7:
-    try:
-        base64_string = text.split(" ", 1)[1]
-    except:
-        return
-    string = await decode(base64_string)
-    argument = string.split("-")
-
-    if len(argument) == 3:
         try:
-            start = int(int(argument[1]) / abs(client.db_channel.id))
-            end = int(int(argument[2]) / abs(client.db_channel.id))
+            base64_string = text.split(" ", 1)[1]
         except:
             return
-        if start <= end:
-            ids = range(start, end + 1)
-        else:
-            ids = []
-            i = start
-            while True:
-                ids.append(i)
-                i -= 1
-                if i < end:
-                    break
-    elif len(argument) == 2:
+        string = await decode(base64_string)
+        argument = string.split("-")
+
+        if len(argument) == 3:
+            try:
+                start = int(int(argument[1]) / abs(client.db_channel.id))
+                end = int(int(argument[2]) / abs(client.db_channel.id))
+            except:
+                return
+            if start <= end:
+                ids = range(start, end + 1)
+            else:
+                ids = []
+                i = start
+                while True:
+                    ids.append(i)
+                    i -= 1
+                    if i < end:
+                        break
+        elif len(argument) == 2:
+            try:
+                ids = [int(int(argument[1]) / abs(client.db_channel.id))]
+            except:
+                return
+
+        temp_msg = await message.reply("Please wait Baby...")
+
         try:
-            ids = [int(int(argument[1]) / abs(client.db_channel.id))]
+            messages = await get_messages(client, ids)
         except:
+            await message.reply_text("Something went wrong..!")
             return
 
-    # Send the file directly after verification
-    await send_file(client, message.from_user.id)
+        await temp_msg.delete()
 
+        snt_msgs = []
+        
 
         for msg in messages:
             if bool(CUSTOM_CAPTION) and bool(msg.document):
