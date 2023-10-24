@@ -46,7 +46,7 @@ async def start_command(client, message):
             user_data = {
                 "user_id": user_id,
                 "verification_time": datetime.now(),
-                "expiration_time": datetime now() + timedelta(hours=24),
+                "expiration_time": datetime.now() + timedelta(hours=24),
                 "status": "ACTIVE"  # Verification status
             }
             VERIFIED[user_id] = user_data
