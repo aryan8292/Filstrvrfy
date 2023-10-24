@@ -28,7 +28,8 @@ async def start_command(client, message):
         await message.reply_text("You are successfully verified for 24 hours. You can use the bot.")
     else:
         # User is not verified or their verification has expired, provide them with a token
-        token = await get_token(client, user_id, "https://example.com/")  # Replace with your link
+        token = await get_token(client, user_id, "https://t.me/{client.username}?start=verify-{user_id}-{token}")
+        link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
 
         # Verify user and set verification status in the 'VERIFIED' dictionary
         verification_success = await verify_user(client, user_id, token)
