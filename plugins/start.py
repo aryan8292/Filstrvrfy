@@ -28,7 +28,7 @@ async def start_command(client, message):
     text = message.text
 
     # Check if the user is already verified and their verification is still valid (within 24 hours)
-    await asyncio.sleep(SECONDS)  # Replace SECONDS with the number of seconds you want to wait
+    await asyncio.sleep(0.5)  # Replace SECONDS with the number of seconds you want to wait
 
     # Check if the user is already verified and their verification is still valid (within 24 hours)
     if await check_verification(client, user_id):
