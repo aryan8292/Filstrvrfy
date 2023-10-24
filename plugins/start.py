@@ -18,8 +18,7 @@ from verify import TOKENS, VERIFIED, check_token, get_token, verify_user, check_
 
 SECONDS = int(os.getenv("SECONDS", "10")) #add time im seconds for waitingwaiting before delete
 
-
-@Bot.on_message(filters.command('start') & filters.private)
+@Bot.on_message(filters.command(['start', 'verify']) & filters.private)
 async def start_or_verify_command(client: Client, message: Message):
     user_id = message.from_user.id
     text = message.text  # Define the 'text' variable here
@@ -51,7 +50,8 @@ async def start_or_verify_command(client: Client, message: Message):
 
     # User is not verified or their verification has expired, provide them with a token
     token = await get_token(client, user_id, "https://example.com/") # Replace with your link
-    link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
+    message = "You are verified for 24 hours"  # Add your message here
+    link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}&message={message}"
 
     # Shorten the verification link using the get_shortlink function
     shortened_link = await get_shortlink(link)
@@ -66,6 +66,7 @@ async def start_or_verify_command(client: Client, message: Message):
         reply_markup=reply_markup,
         quote=True
     )
+
 
     if len(text)>7:
         try:
