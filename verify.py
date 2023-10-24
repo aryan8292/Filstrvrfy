@@ -20,8 +20,15 @@ async def generate_random_string(num: int):
     return random_string
 
 TOKENS = {}
-VERIFIED = {}
 
+async def get_token(bot, userid, link):
+    user = await bot.get_users(userid)
+    token = await generate_random_string(7)
+    TOKENS[user.id] = {token: False}
+    link = f"{link}verify-{user.id}-{token}"
+    shortened_verify_url = await get_shortlink(link)
+    return str(shortened_verify_url)
+    
 async def check_token(bot, userid, token):
     user = await bot.get_users(userid)
     if user.id in TOKENS.keys():
@@ -34,14 +41,6 @@ async def check_token(bot, userid, token):
                 return True
     else:
         return False
-
-async def get_token(bot, userid, link):
-    user = await bot.get_users(userid)
-    token = await generate_random_string(7)
-    TOKENS[user.id] = {token: False}
-    link = f"{link}verify-{user.id}-{token}"
-    shortened_verify_url = await get_shortlink(link)
-    return str(shortened_verify_url)
 
 VERIFIED = {}  # Initialize an empty dictionary to store user verification data
 
