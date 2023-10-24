@@ -28,16 +28,12 @@ async def start_command(client, message):
     text = message.text
 
     # Check if the user is already verified and their verification is still valid (within 24 hours)
-    await asyncio.sleep(5)  # Add a 5-second time gap before checking the verification status
-
-    # Inform the user that verification is being checked
-    await message.reply_text("Wait! Checking if you are verified...")
+    await asyncio.sleep(SECONDS)  # Replace SECONDS with the number of seconds you want to wait
 
     # Check if the user is already verified and their verification is still valid (within 24 hours)
     if await check_verification(client, user_id):
-        # User is already verified, respond with a message indicating verification status
-        if text.startswith('/start'):
-            await message.reply_text("You are successfully verified for 24 hours. You can use the bot.")
+        # User is already verified, no need to send a message
+
     else:
         # User is not verified or their verification has expired, provide them with a token
         token = await get_token(client, user_id, "https://t.me/{client.username}?start=verify-{user_id}-{token}")
@@ -56,9 +52,11 @@ async def start_command(client, message):
             }
             VERIFIED[user_id] = user_data
 
-            if text.startswith('/start'):
-                # Respond with a message indicating successful verification for 24 hours
-                await message.reply_text("You are successfully verified for 24 hours. You can use the bot.")
+            # Send a verification message
+            verification_message = await message.reply_text("You are successfully verified for 24 hours. You can use the bot.")
+            await asyncio.sleep(SECONDS)  # Add a delay for SECONDS
+            await verification_message.delete()
+
         else:
             # Verification failed, provide a token and verification link
             link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
@@ -71,8 +69,9 @@ async def start_command(client, message):
                 quote=True
             )
 
+    # Handle the rest of your code (e.g., sending files)
 
-    if len(text)>7:
+    if len(text) > 7:
         try:
             base64_string = text.split(" ", 1)[1]
         except:
@@ -86,7 +85,7 @@ async def start_command(client, message):
             except:
                 return
             if start <= end:
-                ids = range(start,end+1)
+                ids = range(start, end + 1)
             else:
                 ids = []
                 i = start
@@ -111,9 +110,9 @@ async def start_command(client, message):
         snt_msgs = []
 
         for msg in messages:
-
-            if bool(CUSTOM_CAPTION) & bool(msg.document):
-                caption = CUSTOM_CAPTION.format(previouscaption = "" if not msg.caption else msg.caption.html, filename = msg.document.file_name)
+            if bool(CUSTOM_CAPTION) and bool(msg.document):
+                caption = CUSTOM_CAPTION.format(previouscaption="" if not msg.caption else msg.caption.html,
+                                                filename=msg.document.file_name)
             else:
                 caption = "" if not msg.caption else msg.caption.html
 
@@ -123,16 +122,19 @@ async def start_command(client, message):
                 reply_markup = None
 
             try:
-                snt_msg = await msg.copy(chat_id=message.from_user.id, caption = caption, parse_mode = ParseMode.HTML, reply_markup = reply_markup, protect_content=PROTECT_CONTENT)
+                snt_msg = await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML,
+                                        reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
                 await asyncio.sleep(0.5)
                 snt_msgs.append(snt_msg)
             except FloodWait as e:
                 await asyncio.sleep(e.x)
-                snt_msg = await msg.copy(chat_id=message.from_user.id, caption = caption, parse_mode = ParseMode.HTML, reply_markup = reply_markup, protect_content=PROTECT_CONTENT)
+                snt_msg = await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML,
+                                        reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
                 snt_msgs.append(snt_msg)
             except:
                 pass
 
+        # Add a delay for SECONDS and then automatically delete the sent messages
         await asyncio.sleep(SECONDS)
 
         for snt_msg in snt_msgs:
