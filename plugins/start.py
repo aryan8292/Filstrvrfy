@@ -87,8 +87,8 @@ async def get_token(client, user_id, url):
 
 
 # Define your shortening service API and API key
-SHORTENER_API = "https://your-shortening-service.com/api"
-API_KEY = "your-api-key"
+SHORTENER_API = "4e5ad4ad0887416c80a30df41097dd96004b1f19"
+API_KEY = "24316517"
 
 async def get_shortened_url(long_url, shortener_api, api_key):
     try:
