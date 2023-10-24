@@ -20,6 +20,7 @@ async def generate_random_string(num: int):
     return random_string
 
 TOKENS = {}
+VERIFIED = {}  # Initialize an empty dictionary to store user verification data
 
 async def get_token(bot, userid, link):
     user = await bot.get_users(userid)
@@ -42,12 +43,6 @@ async def check_token(bot, userid, token):
     else:
         return False
 
-VERIFIED = {}  # Initialize an empty dictionary to store user verification data
-
-from datetime import datetime, timedelta
-import pytz  # Import the pytz module
-
-VERIFIED = {}  # Initialize an empty dictionary to store user verification data
 
 async def verify_user(bot, userid, token, bot_username):
     user = await bot.get_users(userid)
@@ -60,15 +55,11 @@ async def verify_user(bot, userid, token, bot_username):
     verification_time = current_time.astimezone(tz)  # Make it timezone-aware
     expiration_time = verification_time + timedelta(hours=24)
 
-    # Format the verification and expiration times as strings
-    verification_time_str = verification_time.strftime("%Y-%m-%d %H:%M:%S")
-    expiration_time_str = expiration_time.strftime("%Y-%m-%d %H:M:%S")
-
     # Store the verification and expiration times in the VERIFIED dictionary along with user_id
     user_data = {
         "user_id": user.id,
-        "verification_time": verification_time_str,
-        "expiration_time": expiration_time_str,
+        "verification_time": verification_time,
+        "expiration_time": expiration_time,
         "verification_status": "ACTIVE",  # Set verification status as ACTIVE
     }
     VERIFIED[user.id] = user_data
@@ -81,10 +72,7 @@ async def check_verification(bot, userid):
 
     if user.id in VERIFIED.keys():
         user_data = VERIFIED[user.id]
-        expiration_time_str = user_data.get("expiration_time")
-
-        # Parse the expiration time string back to a datetime object
-        expiration_time = datetime.strptime(expiration_time_str, "%Y-%m-%d %H:%M:%S")
+        expiration_time = user_data.get("expiration_time")
 
         # Get the current time and make it timezone-aware
         tz = pytz.timezone('Asia/Kolkata')  # Adjust the timezone as needed
@@ -100,7 +88,6 @@ async def check_verification(bot, userid):
             return False  # Verification has expired
     else:
         return False  # User is not verified
-
 
 async def generate_telegram_bot_url(bot_username):
     return f'tg://resolve?domain={bot_username}&start=verified'
