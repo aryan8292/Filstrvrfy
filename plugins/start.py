@@ -80,9 +80,9 @@ async def get_verification_token(user_id):
 
         return verification_token
 
-async def get_token(client, user_id, token):
-    token = await get_verification_token(user_id)  # Call get_verification_token to retrieve the token
-    return token
+async def get_token(client, user_id, url):
+    # Your code to shorten the verification URL
+    return shortened_url
 
 async def is_verified_user(user_id):
     # Connect to the MongoDB database
@@ -135,8 +135,8 @@ async def start_command(client, message):
             # Generate a verification token if not verified
             token = await get_verification_token(user_id)
 
-            # Calculate the expiration time (24 hours from now)
-            expiration_time = datetime.now() + timedelta(hours=24)
+            # Calculate the expiration time
+            expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
 
             # Get the current date and time
             current_time = datetime.now()
@@ -147,21 +147,27 @@ async def start_command(client, message):
                 "token": token,
                 "expiration_time": expiration_time,
                 "timestamp": current_time,
-                "status_of_token": "active",
+                "status_of_token": "active",  # Set the status as "active" initially
             }
+
+            # Store the data in the verification collection
+            await update_verification_data(verification_data)
 
             # Generate a message with the verification token
             text = (
                 f"Welcome, {message.from_user.mention}!\n\n"
                 "To access our services, please verify your identity.\n\n"
                 f"Your verification token: {token}\n\n"
-                f"Your verification is valid for 24 hours."
+                f"Your verification is valid for {VERIFY_EXPIRATION_HOURS} hours."
             )
 
             # Create a button for verification
+            verification_url = f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}"
+            shortened_url = await get_shortened_url(verification_url)
+
             button = InlineKeyboardButton(
                 "Verify",
-                url=await get_token(client, user_id, f"https://telegram.me/{client.username}?start=verify-{user_id}-{token}")
+                url=shortened_url
             )
 
             # Create a reply markup with the verification button
@@ -170,11 +176,12 @@ async def start_command(client, message):
             # Send the verification message
             await message.reply_text(text, reply_markup=reply_markup)
     else:
-        # Check if the user is verified based on the status of their token
-        verification_data = await get_verification_data(user_id)
+        # Check if the user is verified based on their active status
+        is_verified = await is_verified_user(user_id)
 
-        if verification_data and verification_data["status_of_token"] == "active":
-            # User's token is still active
+        if is_verified:
+            # Redirect the user to the bot with a /start command
+            await client.send_message(user_id, "/start")
             await message.reply_text("You are verified for 24 hours.")
         else:
             # User is not verified, provide the start message
@@ -185,6 +192,7 @@ async def start_command(client, message):
                     InlineKeyboardButton("Verify", url=f"https://telegram.me/{client.username}?start=verify")
                 ]])
             )
+
 
 
       
