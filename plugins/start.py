@@ -18,15 +18,67 @@ from database.database import add_user, del_user, full_userbase, present_user
 SECONDS = int(os.getenv("SECONDS", "10")) #add time im seconds for waitingwaiting before delete
 
 
-@Bot.on_message(filters.command('start') & filters.private & subscribed)
-async def start_command(client: Client, message: Message):
-    id = message.from_user.id
-    if not await present_user(id):
-        try:
-            await add_user(id)
-        except:
-            pass
-    text = message.text
+@Bot.on_message(filters.command(['start', 'verify']) & filters.private)
+async def start_or_verify_command(client: Client, message: Message):
+    user_id = message.from_user.id
+
+    # Check if the user is already verified and their verification is still valid (within 24 hours)
+    if await check_verification(client, user_id):
+        # User is already verified and their verification is still valid, they can use the bot
+        reply_markup = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton("😊 About Me", callback_data="about"),
+                    InlineKeyboardButton("🔒 Close", callback_data="close")
+                ]
+            ]
+        )
+        await message.reply_text(
+            text=START_MSG.format(
+                first=message.from_user.first_name,
+                last=message.from_user.last_name,
+                username=None if not message.from_user.username else '@' + message.from_user.username,
+                mention=message.from_user.mention,
+                id=message.from_user.id
+            ),
+            reply_markup=reply_markup,
+            disable_web_page_preview=True,
+            quote=True
+        )
+        return
+
+    if message.text.startswith('/verify'):
+        # User wants to start the verification process
+        token = await get_token(client, user_id, "https://example.com/")  # Replace with your verification link
+        await message.reply(f"Click the following link to verify your token:\n{token}")
+        return
+
+    # User is not verified or their verification has expired, prompt them to verify
+    reply_markup = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("Verify Now", callback_data="verify")]
+        ]
+    )
+    await message.reply_text(
+        "To use the bot, you should verify your account. Click the 'Verify Now' button below to start the verification process.",
+        reply_markup=reply_markup,
+        quote=True
+    )
+
+@Bot.on_callback_query(filters.regex("verify"))
+async def handle_verification_query(client: Client, callback_query: CallbackQuery):
+    user_id = callback_query.from_user.id
+
+    # Check if the user is already verified and their verification is still valid (within 24 hours)
+    if await check_verification(client, user_id):
+        await callback_query.answer("You are already verified.")
+        return
+
+    # User wants to start the verification process
+    token = await get_token(client, user_id, "https://example.com/")  # Replace with your verification link
+    await callback_query.message.reply(f"Click the following link to verify your token:\n{token}")
+    await callback_query.answer()
+
     if len(text)>7:
         try:
             base64_string = text.split(" ", 1)[1]
