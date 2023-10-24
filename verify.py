@@ -74,9 +74,8 @@ async def check_verification(bot, userid):
         user_data = VERIFIED[user.id]
         expiration_time = user_data.get("expiration_time")
 
-        # Get the current time and make it timezone-aware
-        tz = pytz.timezone('Asia/Kolkata')  # Adjust the timezone as needed
-        current_time = datetime.now(tz)
+        # Make current_time offset-aware with the same timezone as expiration_time
+        current_time = datetime.now(expiration_time.tzinfo)
 
         if current_time < expiration_time:
             # Update verification status as ACTIVE
@@ -88,6 +87,7 @@ async def check_verification(bot, userid):
             return False  # Verification has expired
     else:
         return False  # User is not verified
+
 
 async def generate_telegram_bot_url(bot_username):
     return f'tg://resolve?domain={bot_username}&start=verified'
