@@ -51,26 +51,35 @@ async def get_verification_token(user_id):
         expiration_time = user_data.get("expiration_time")
 
         if current_time <= expiration_time:
-            # Return the existing token
+            # Return the existing token and update its expiration time
+            new_expiration_time = current_time + timedelta(hours=24)
+            collection.update_one(
+                {"user_id": user_id},
+                {"$set": {"expiration_time": new_expiration_time}},
+            )
             return user_data.get("token")
-    
-    # If no valid token is found, generate a new one
-    verification_token = secrets.token_hex(16)  # Generates a 32-character hexadecimal token
+        else:
+            # If the token is expired, set its status to "deactivated" and generate a new one
+            status_of_token = "deactivated"
+    else:
+        # If no valid token is found, generate a new one
+        verification_token = secrets.token_hex(16)  # Generates a 32-character hexadecimal token
 
-    # Calculate the expiration time (24 hours from now)
-    expiration_time = datetime.now() + timedelta(hours=VERIFY_EXPIRATION_HOURS)
+        # Calculate the expiration time (24 hours from now)
+        new_expiration_time = datetime.now() + timedelta(hours=24)
 
-    # Define the status of the token as "active"
-    status_of_token = "active"
+        # Define the status of the token as "active"
+        status_of_token = "active"
 
-    # Update or insert the verification data in the collection
-    collection.update_one(
-        {"user_id": user_id},
-        {"$set": {"token": verification_token, "expiration_time": expiration_time, "status_of_token": status_of_token}},
-        upsert=True  # Insert a new document if not found
-    )
+        # Update or insert the verification data in the collection
+        collection.update_one(
+            {"user_id": user_id},
+            {"$set": {"token": verification_token, "expiration_time": new_expiration_time, "status_of_token": status_of_token}},
+            upsert=True,  # Insert a new document if not found
+        )
 
-    return verification_token
+        return verification_token
+
 
 async def is_verified_user(user_id):
     # Connect to the MongoDB database
