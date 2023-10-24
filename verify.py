@@ -81,10 +81,11 @@ async def check_verification(bot, userid):
         return False  # User is not verified
 
 
-async def generate_telegram_bot_url(username):
-    return f'tg://resolve?domain={username}&start=verified'
+async def generate_telegram_bot_url(bot_username):
+    return f'tg://resolve?domain={bot_username}&start=verified'
 
 if __name__ == "__main__":
     # Replace 'bot_username' with your actual bot's username
     bot_username = "@FileXTera_bot"
     print("Bot URL:", generate_telegram_bot_url(bot_username))
+
