@@ -20,18 +20,13 @@ SECONDS = int(os.getenv("SECONDS", "10")) #add time im seconds for waitingwaitin
 
 
 @Bot.on_message(filters.command('start') & filters.private)
-async def start(client: Client, message: Message):
+async def start_or_verify_command(client: Client, message: Message):
     user_id = message.from_user.id
     text = message.text  # Define the 'text' variable here
 
-    if not await present_user(user_id):
-        try:
-            await add_user(user_id)
-        except:
-            pass
-
+    # Check if the user is already verified and their verification is still valid (within 24 hours)
     if await check_verification(client, user_id):
-        # User is already verified, send the second message
+        # User is already verified and their verification is still valid, they can use the bot
         reply_markup = InlineKeyboardMarkup(
             [
                 [
@@ -52,51 +47,25 @@ async def start(client: Client, message: Message):
             disable_web_page_preview=True,
             quote=True
         )
-    else:
-        # User is not verified or their verification has expired, provide them with a token
-        token = await get_token(client, user_id, "https://example.com/")  # Replace with your link
+        return
 
-        # Verify user and set verification status in the 'VERIFIED' dictionary
-        bot_username = "@FileXTera_bot"  # Replace with your bot's username
-        verification_success = await verify_user(client, user_id, token, bot_username)
+    # User is not verified or their verification has expired, provide them with a token
+    token = await get_token(client, user_id, "https://example.com/") # Replace with your link
+    link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
 
+    # Shorten the verification link using the get_shortlink function
+    shortened_link = await get_shortlink(link)
 
-        if verification_success:
-            reply_markup = InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton("😊 About Me", callback_data="about"),
-                        InlineKeyboardButton("🔒 Close", callback_data="close")
-                    ]
-                ]
-            )
-            await message.reply_text(
-                text=START_MSG.format(
-                    first=message.from_user.first_name,
-                    last=message.from_user.last_name,
-                    username=None if not message.from_user.username else '@' + message.from_user.username,
-                    mention=message.from_user.mention,
-                    id=message.from_user.id
-                ),
-                reply_markup=reply_markup,
-                disable_web_page_preview=True,
-                quote=True
-            )
-        else:
-            link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
-            # Create a button for verification
-            button = InlineKeyboardButton(
-                "Verify Now",
-                url=link
-            )
-            reply_markup = InlineKeyboardMarkup([[button]])
-
-            await message.reply_text(
-                f"Here is your verification token: {token}\nClick the 'Verify Now' button below to start the verification process.",
-                reply_markup=reply_markup,
-                quote=True
-            )
-
+    reply_markup = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("Verify Now", url=shortened_link)]
+        ]
+    )
+    await message.reply_text(
+        f"Here is your verification token: {token}\nClick the 'Verify Now' button below to start the verification process.",
+        reply_markup=reply_markup,
+        quote=True
+    )
 
     if len(text)>7:
         try:
