@@ -91,10 +91,10 @@ SHORTENER_API = "4e5ad4ad0887416c80a30df41097dd96004b1f19"
 API_KEY = "24316517"
 
 # Define an async function to get the shortened URL
-async def get_shortened_url(long_url, shortener_api, api_key):
+async def get_shortened_url(long_url):
     try:
         # Construct the request URL with the provided API and API key
-        request_url = f"{shortener_api}?api={api_key}&url={long_url}"
+        request_url = f"{SHORTENER_API}?api={API_KEY}&url={long_url}"
 
         # Send a GET request to the shortening service
         response = requests.get(request_url)
@@ -113,7 +113,7 @@ async def get_shortened_url(long_url, shortener_api, api_key):
 # Define an async function to use the get_shortened_url function
 async def main():
     long_url = "https://example.com"
-    shortened_url = await get_shortened_url(long_url, SHORTENER_API, API_KEY)
+    shortened_url = await get_shortened_url(long_url)
 
     if shortened_url:
         print(f"Shortened URL: {shortened_url}")
@@ -122,11 +122,8 @@ async def main():
 
 # Run the main function if the script is executed
 if __name__ == "__main__":
-    import requests
     import asyncio
     asyncio.run(main())
-
-
 
 async def is_verified_user(user_id):
     # Connect to the MongoDB database
