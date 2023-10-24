@@ -48,37 +48,24 @@ async def start_or_verify_command(client: Client, message: Message):
         )
         return
 
-    if message.text.startswith('/verify'):
-        # User wants to start the verification process
-        token = await get_token(client, user_id, "https://example.com/")  # Replace with your verification link
-        await message.reply(f"Click the following link to verify your token:\n{token}")
-        return
+    # User is not verified or their verification has expired, provide them with a token
+    token = await get_token(client, user_id, link)
+    link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
 
-    # User is not verified or their verification has expired, prompt them to verify
+    # Shorten the verification link using the get_shortlink function
+    shortened_link = await get_shortlink(link)
+
     reply_markup = InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton("Verify Now", callback_data="verify")]
+            [InlineKeyboardButton("Verify Now", url=shortened_link)]
         ]
     )
     await message.reply_text(
-        "To use the bot, you should verify your account. Click the 'Verify Now' button below to start the verification process.",
+        f"Here is your verification token: {token}\nClick the 'Verify Now' button below to start the verification process.",
         reply_markup=reply_markup,
         quote=True
     )
 
-@Bot.on_callback_query(filters.regex("verify"))
-async def handle_verification_query(client: Client, callback_query: CallbackQuery):
-    user_id = callback_query.from_user.id
-
-    # Check if the user is already verified and their verification is still valid (within 24 hours)
-    if await check_verification(client, user_id):
-        await callback_query.answer("You are already verified.")
-        return
-
-    # User wants to start the verification process
-    token = await get_token(client, user_id, "https://example.com/")  # Replace with your verification link
-    await callback_query.message.reply(f"Click the following link to verify your token:\n{token}")
-    await callback_query.answer()
 
     if len(text)>7:
         try:
