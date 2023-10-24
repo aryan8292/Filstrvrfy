@@ -24,6 +24,9 @@ async def start_command(client, message):
     user_id = message.from_user.id
     bot_username = "@FileXTera_bot"
 
+    # Extract the message text
+    text = message.text
+
     # Check if the user is already verified and their verification is still valid (within 24 hours)
     if await check_verification(client, user_id):
         # User is already verified, respond with a message indicating verification status
