@@ -19,46 +19,51 @@ from verify import TOKENS, VERIFIED, check_token, get_token, verify_user, check_
 
 SECONDS = int(os.getenv("SECONDS", "10")) #add time im seconds for waitingwaiting before delete
 
-# Check if the user is already verified and their verification is still valid (within 24 hours)
-await asyncio.sleep(5)  # Add a 5-second time gap before checking the verification status
+@Bot.on_message(filters.command(['start']) & filters.private)
+async def start_command(client, message):
+    user_id = message.from_user.id
+    bot_username = "@FileXTera_bot"  # Replace with your actual bot's username
 
-# Check if the user is already verified and their verification is still valid (within 24 hours)
-if await check_verification(client, user_id):
-    # User is already verified, respond with a message indicating verification status
-    if text.startswith('/start'):
+    # Extract the message text
+    text = message.text
+
+    # Check if the user is already verified and their verification is still valid (within 24 hours)
+    await asyncio.sleep(5)  # Add a 5-second time gap before checking the verification status
+
+    if await check_verification(client, user_id):
+        # User is already verified, respond with a message indicating verification status
         await message.reply_text("You are successfully verified for 24 hours. You can use the bot.")
-else:
-    # User is not verified or their verification has expired, provide them with a token
-    token = await get_token(client, user_id, "https://t.me/{client.username}?start=verify-{user_id}-{token}")
-    link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
+    else:
+        # User is not verified or their verification has expired, provide them with a token
+        token = await get_token(client, user_id, "https://example.com/")  # Replace with your link
 
-    # Verify user and set verification status in the 'VERIFIED' dictionary
-    verification_success = await verify_user(client, user_id, token, bot_username)
+        # Verify user and set verification status in the 'VERIFIED' dictionary
+        verification_success = await verify_user(client, user_id, token, bot_username)
 
-    if verification_success:
-        # User is verified, add to the 'VERIFIED' dictionary with expiration time
-        user_data = {
-            "user_id": user_id,
-            "verification_time": datetime.now(),
-            "expiration_time": datetime.now() + timedelta(hours=24),
-            "status": "ACTIVE"  # Verification status
-        }
-        VERIFIED[user_id] = user_data
+        if verification_success:
+            # User is verified, add to the 'VERIFIED' dictionary with expiration time
+            user_data = {
+                "user_id": user_id,
+                "verification_time": datetime.now(),
+                "expiration_time": datetime.now() + timedelta(hours=24),
+                "status": "ACTIVE"  # Verification status
+            }
+            VERIFIED[user_id] = user_data
 
-        if text.startswith('/start'):
             # Respond with a message indicating successful verification for 24 hours
             await message.reply_text("You are successfully verified for 24 hours. You can use the bot.")
-    else:
-        # Verification failed, provide a token and verification link
-        link = f"https://t.me/{client.username}?start=verify-{user_id}-{token}"
-        reply_markup = InlineKeyboardMarkup(
-            [InlineKeyboardButton("Verify Now", url=link)]
-        )
-        await message.reply_text(
-            f"Here is your verification token: {token}\nClick the 'Verify Now' button below to start the verification process.",
-            reply_markup=reply_markup,
-            quote=True
-        )
+        else:
+            # Verification failed, provide a token and verification link
+            link = f"https://t.me/{bot_username}?start=verify-{user_id}-{token}"
+            reply_markup = InlineKeyboardMarkup(
+                [InlineKeyboardButton("Verify Now", url=link)]
+            )
+            await message.reply_text(
+                f"Here is your verification token: {token}\nClick the 'Verify Now' button below to start the verification process.",
+                reply_markup=reply_markup,
+                quote=True
+            )
+
 
 
     if len(text)>7:
