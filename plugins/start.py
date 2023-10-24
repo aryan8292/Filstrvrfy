@@ -84,6 +84,30 @@ async def get_token(client, user_id, url):
     # Your code to shorten the verification URL
     return shortened_url
 
+import requests
+
+async def get_shortened_url(long_url, shortener_api, api_key):
+    try:
+        headers = {
+            "Authorization": f"Bearer {api_key}",  # Adjust the authorization header as needed
+            "Content-Type": "application/json",
+        }
+
+        payload = {
+            "url": long_url,
+        }
+
+        response = await requests.get(shortener_api, headers=headers, params=payload)
+
+        if response.status_code == 200:
+            data = response.json()
+            shortened_url = data.get('shortenedUrl')  # Replace with the appropriate field name
+            return shortened_url
+        else:
+            return None  # Handle the case when the request is not successful
+    except Exception as e:
+        return str(e)
+
 async def is_verified_user(user_id):
     # Connect to the MongoDB database
     client = MongoClient(DB_URI)
