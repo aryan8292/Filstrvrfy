@@ -64,7 +64,11 @@ async def start_or_verify_command(client: Client, message: Message):
         )
         reply_markup = InlineKeyboardMarkup([[button]])
         
-        await message.reply(verification_message, reply_markup=reply_markup)
+        await message.reply_text(
+        f"Here is your verification token: {token}\nClick the 'Verify Now' button below to start the verification process.",
+        reply_markup=reply_markup,
+        quote=True
+    )
 
 
 
