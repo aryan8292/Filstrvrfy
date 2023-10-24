@@ -85,10 +85,9 @@ async def get_token(client, user_id, url):
     # Your code to shorten the verification URL
     return shortened_url
 
-
 # Define your shortening service API and API key
-SHORTENER_API = "4e5ad4ad0887416c80a30df41097dd96004b1f19"
-API_ID = "24316517"
+SHORTNER_API = os.environ.get("SHORTENER_SITE")
+API_ID = os.environ.get("SHORTENER_API")
 
 # Define an async function to get the shortened URL
 async def get_shortened_url(link, shortener_api, api_id):
